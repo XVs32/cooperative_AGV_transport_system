@@ -1,0 +1,3 @@
+Motor battery: 55mm*70mm*18mm
+
+battery: 71mm*100mm*23mm
