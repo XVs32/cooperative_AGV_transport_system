@@ -1,0 +1,3 @@
+/home/pi/standalone/build/CMakeFiles/rebuild_cache.dir
+/home/pi/standalone/build/CMakeFiles/simpletest_raspicam_cv.dir
+/home/pi/standalone/build/CMakeFiles/edit_cache.dir
