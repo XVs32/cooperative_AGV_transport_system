@@ -1,8 +1,0 @@
-Debug: start waiting qr_angle	|Time:Fri Oct 23 15:05:35 2020
-DEBUG: qr_ordr set to -1	|Time:Fri Oct 23 15:05:35 2020
-DEBUG: qr_ordr set to 1	|Time:Fri Oct 23 15:05:35 2020
-Info: Camera_exec	|Time:Fri Oct 23 15:05:35 2020
-DEBUG: Qr ipc sent	|Time:Fri Oct 23 15:05:35 2020
-DEBUG: qr_ordr set to -1	|Time:Fri Oct 23 15:05:35 2020
-Debug: end waiting qr_angle = 235	|Time:Fri Oct 23 15:05:35 2020
-Debug: start moscorr count down	|Time:Fri Oct 23 15:05:35 2020

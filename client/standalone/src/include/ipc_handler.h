@@ -5,8 +5,7 @@ int ipc_accept(int listenfd);
 int ipc_listen();
 int ipc_connect();
 
-int ipc_recv(int token, void* buf, int size);
-int ipc_int_recv(int token, int *data);
+int ipc_int_recv_all(int token, int *data);
 
 int ipc_send(int token, void* buf, int size);
 int ipc_int_send(int token, int data);

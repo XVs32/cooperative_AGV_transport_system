@@ -101,43 +101,41 @@ int main (){
 	go_cir(LEFT,250,180);
 	sleep(1);
 	turn_qr(90);
-	sleep(1);
 	forward_to_qr(300);
+	/*sleep(1);
+	turn_qr(178);
 	sleep(1);
-	turn_qr(0);
+	go_mos(300);
 	sleep(1);
-	forward_to_qr(500);
+	turn_mos(-45);
+	sleep(1);
+	go_cir(LEFT,424,45);
+	sleep(1);*/
+	
+	
+	sleep(1);
+	turn_qr(178);
+	sleep(1);
+	go_mos(300);
+	sleep(1);
+	turn_mos(-45);
+	sleep(1);
+	go_cir(LEFT,424,45);
+	sleep(1);
+	turn_mos(-90);
+	sleep(1);
+	go_mos(424);
 	sleep(1);
 	turn_qr(180);
 	sleep(1);
 	forward_to_qr(500);
 	sleep(1);
-	turn_qr(0);
-	sleep(1);
-	forward_to_qr(500);
-	sleep(1);
 	turn_qr(90);
 	sleep(1);
-	forward_to_qr(300);
+	go_cir(LEFT,250,180);
 	sleep(1);
-	turn_qr(90);
-	
-	
-	/*
+	turn_qr(180);
 	sleep(1);
-	qr_code init_angle = get_qr_angle();//current qr code angle
-	turn_mos(45);
-	sleep(1);
-	qr_code qr_angle = get_qr_angle();//current qr code angle
-    int diff = get_angle_diff(init_angle.angle,qr_angle.angle);
-	printf("ground turth %d. init_angle %d qr_angle %d\n", diff, init_angle.angle,qr_angle.angle);
-	
-	
-	
-	motor_ctrl(LEFT, FORWARD, 30);
-	motor_ctrl(RIGHT, FORWARD, 100);
-	sleep(2);*/
-	
 	printf("finsh, back to main.\n");
 	
 	pthread_join(t_mos_reader_0,NULL); //None of this pthread_join should exec.

@@ -22,9 +22,10 @@ int command_ipc;
 
 void ipc_clear(int token){
 	int tmp;
-	while(recv(token, &tmp, sizeof(int), MSG_DONTWAIT)>0){}
+	volatile int optimised_disable;
+	while(recv(token, &tmp, sizeof(int), MSG_DONTWAIT)>0){optimised_disable = tmp;}
 	
-	#ifdef DEBUG_LV_2
+	#ifdef DEBUG
 		write_log("ipc_clear");
 	#endif
 	return;
@@ -78,18 +79,8 @@ int serv_listen(const char *name){
 	return(fd);
 }
 
-
-
 int ipc_connect(){
 	return cli_conn("ipc_socket");
-}
-
-int ipc_recv(int token, void* buf, int size){
-	int ret = read(token, buf, size);
-	#ifdef DEBUG_LV_2
-		write_log("DEBUG: ipc_recv");
-	#endif
-	return ret;
 }
 
 int ipc_send(int token, void* buf, int size){
@@ -108,13 +99,19 @@ int ipc_int_send(int token, int data){
 	#endif
 	return ret;
 }
-
-int ipc_int_recv(int token, int *data){
-	int ret = read(token, data, sizeof(int));
+		
+int ipc_int_recv_all(int token, int *data){
+	int count = 0;
+	int tem;
+	while(recv(token, &tem, sizeof(int), MSG_DONTWAIT)>0){
+		*data += tem;
+		count++;
+	}
+	
 	#ifdef DEBUG_LV_2
 		write_log("DEBUG: ipc_int_send");
 	#endif
-	return ret;
+	return count;
 }
 
 /*

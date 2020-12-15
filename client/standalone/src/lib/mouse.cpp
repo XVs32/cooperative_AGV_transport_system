@@ -9,6 +9,7 @@
 #include "motor.h"
 #include "ipc_handler.h"
 #include "log.h"
+#include "timer.h"
 
 #define PI 3.14159265
 
@@ -124,60 +125,68 @@ void* mos_reader(void* input){
 
 
 void moscorr(){//mouse correction //MUST run after camera_init()
-    
-    char msg[50];
-    
-    motor_stop();
-    sleep(1);
 	
-    qr_code init_qr = get_qr_angle();
-    
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[0]);
-    mos_ordr(TO_IPC);
-    
-    motor_ctrl(LEFT, FORWARD, 30);
-    motor_ctrl(RIGHT, BACKWARD, 32);
-    
-    int mos_sum;//pixel value sum
-    mos_sum = 0;
-    
-    #ifdef DEBUG
-        write_log("Debug: start moscorr count down");
-    #endif
-    
-    while(abs(mos_sum)<6000){
-        int tem;
-        ipc_int_recv(mos_ipc[0],&tem);
-        mos_sum += tem;
+///////////////////////set up timer start///////////////////////////
+	int timer_fd;
+	setup_timer(&timer_fd, 0,50000000, 0, 0);
+	uint64_t exp; //expire time
+///////////////////////set up timer end/////////////////////////////
+
+	char msg[50];
+
+	motor_stop();
+	sleep(1);
+
+	qr_code init_qr = get_qr_angle();
+
+	mos_ordr(TO_NULL);
+	ipc_clear(mos_ipc[0]);
+	mos_ordr(TO_IPC);
+	
+	#ifdef DEBUG
+		write_log("Debug: start moscorr count down");
+	#endif
+	
+	int mos_sum = 0;//pixel value sum
+	while(abs(mos_sum)<6000){
+		
+		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
+		motor_stop();
+		
+		ipc_int_recv_all(mos_ipc[0],&mos_sum);
+		
+		motor_ctrl(LEFT, FORWARD, 30);
+		motor_ctrl(RIGHT, BACKWARD, 30);
+		
 		#ifdef DEBUG
-            sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
-            write_log(msg);
-        #endif
-    }
-    
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[0]);
-    
-    motor_stop();
-    sleep(1);
+			sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
+			write_log(msg);
+		#endif
+	}
 	
-    #ifdef DEBUG
-        write_log("Debug: end moscorr count down");
-    #endif
-    
-    qr_code cur_qr = get_qr_angle();//current qr code angle
-    
-    int diff = get_angle_diff(init_qr.angle,cur_qr.angle);
-    
-    if(diff == 0){
-        write_log("Error: cannot div by 0, where diff = 0. exit");
-        exit(1);
-    }
-    
-    parel[0] = float(abs(mos_sum)) / float(diff);
+	motor_stop();
+	
+	mos_ordr(TO_NULL);
+	ipc_clear(mos_ipc[0]);
+	
+	sleep(1);
+	
+	#ifdef DEBUG
+		write_log("Debug: end moscorr count down");
+	#endif
+
+	qr_code cur_qr = get_qr_angle();//current qr code angle
+
+	int diff = get_angle_diff(init_qr.angle,cur_qr.angle);
+
+	if(diff == 0){
+		write_log("Error: cannot div by 0, where diff = 0. exit");
+		exit(1);
+	}
+
+	parel[0] = float(abs(mos_sum)) / float(diff);
 	pdrel[0] = float(abs(mos_sum)) / float(((2*PI*82.5)/360)*diff); //r = 82.5
-	
+
 	if(mos_sum>0){
 		left_mos = 0;
 		right_mos = 1;
@@ -186,79 +195,79 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		left_mos = 1;
 		right_mos = 0;
 	}
-    
-    sprintf(msg,"Info: const angle of mouse_0: %f",parel[0]);
-    write_log(msg);
+
+	sprintf(msg,"Info: const angle of mouse_0: %f",parel[0]);
+	write_log(msg);
 	sprintf(msg,"Info: const distance of mouse_0: %f",pdrel[0]);
-    write_log(msg);
-    
-    
-    sleep(1);
-    
-    motor_stop();
+	write_log(msg);
+
+
 	sleep(1);
-    
-    init_qr = get_qr_angle();
-    
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[1]);
-    mos_ordr(TO_IPC);
-    
-    motor_ctrl(LEFT, FORWARD, 30);
-    motor_ctrl(RIGHT, BACKWARD, 32);
-    
-    mos_sum = 0;
-    
-    #ifdef DEBUG
-        write_log("Debug: start moscorr count down");
-    #endif
-    
-    while(abs(mos_sum)<6000){
-        int tem;
-        ipc_int_recv(mos_ipc[1],&tem);
-        mos_sum += tem;
-		#ifdef DEBUG
-            sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
-            write_log(msg);
-        #endif
-    }
-    
-    motor_stop();
+
+	motor_stop();
 	sleep(1);
+
+	init_qr = get_qr_angle();
+
+
+
+	#ifdef DEBUG
+		write_log("Debug: start moscorr count down");
+	#endif
 	
 	mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[1]);
-    
-    #ifdef DEBUG
-        write_log("Debug: end moscorr count down");
-    #endif
-    
-    cur_qr = get_qr_angle();//current qr code angle
-    
-    diff = get_angle_diff(init_qr.angle,cur_qr.angle);
-    
-    if(diff == 0){
-        write_log("Error: cannot div by 0, where diff = 0. exit");
-        exit(1);
-    }
-    
-    parel[1] = float(abs(mos_sum)) / float(diff);
+	ipc_clear(mos_ipc[1]);
+	mos_ordr(TO_IPC);
+
+	mos_sum = 0;
+	while(abs(mos_sum)<6000){
+		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
+		motor_stop();
+		
+		ipc_int_recv_all(mos_ipc[1],&mos_sum);
+		
+		motor_ctrl(LEFT, FORWARD, 30);
+		motor_ctrl(RIGHT, BACKWARD, 30);
+		
+		#ifdef DEBUG
+			sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
+			write_log(msg);
+		#endif
+	}
+
+	motor_stop();
+	sleep(1);
+
+	mos_ordr(TO_NULL);
+	ipc_clear(mos_ipc[1]);
+
+	#ifdef DEBUG
+		write_log("Debug: end moscorr count down");
+	#endif
+
+	cur_qr = get_qr_angle();//current qr code angle
+
+	diff = get_angle_diff(init_qr.angle,cur_qr.angle);
+
+	if(diff == 0){
+		write_log("Error: cannot div by 0, where diff = 0. exit");
+		exit(1);
+	}
+
+	parel[1] = float(abs(mos_sum)) / float(diff);
 	pdrel[1] = float(abs(mos_sum)) / float(((2*PI*82.5)/360)*diff); //r = 82.5
-    
-    sprintf(msg,"Info: const angle of mouse_1: %f",parel[1]);
-    write_log(msg);
+
+	sprintf(msg,"Info: const angle of mouse_1: %f",parel[1]);
+	write_log(msg);
 	sprintf(msg,"Info: const distance of mouse_1: %f",pdrel[1]);
-    write_log(msg);
-	/*int avg = (parel[0] + parel[1]) >> 1;
-	parel[0] = avg;
-	parel[1] = avg;*/
-	
+	write_log(msg);
+
 	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
-    write_log(msg);
-	
+	write_log(msg);
+
 	sprintf(msg,"Info: mouse_%d is right mouse",right_mos);
-    write_log(msg);
-	
-    return;
+	write_log(msg);
+
+	return;
 }
 

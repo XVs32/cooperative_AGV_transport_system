@@ -120,7 +120,7 @@ qr_code get_qr_angle(){
 		cam_ordr(TO_SERVER);//take a photo
 	#endif
 	
-	ipc_recv(qr_ipc,&ret,sizeof(qr_code));
+	read(qr_ipc, &ret, sizeof(qr_code));
 	qr_ordr(TO_NULL);
 	ipc_clear(qr_ipc);
 	
