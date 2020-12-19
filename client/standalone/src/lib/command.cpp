@@ -290,8 +290,8 @@ void go_cir(int side, int r, int angle){
         left_distance = 2*3.14 * (r-82.5) * angle/ 360;
         right_distance = 2*3.14 * (r+82.5) * angle/ 360;
         
-        left_distance *= 1.04;
-        right_distance *= 1.04;
+        left_distance *= 1.10;
+        right_distance *= 1.10;
         
         sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
         write_log(msg);
@@ -338,7 +338,7 @@ void go_cir(int side, int r, int angle){
                 break;
             }
             
-            if((float)((float)right_sum/(float)right_distance) > (float)((float)left_sum/(float)left_distance)){
+            if((float)((float)right_sum/(float)right_distance) > (float)((float)(left_sum)/(float)left_distance) ){
                 state = 0;
                 motor_ctrl(LEFT, FORWARD, 30);
             }
