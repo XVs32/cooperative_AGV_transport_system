@@ -99,9 +99,9 @@ int turn_mos(int target_angle){
     
     char msg[50];
     
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[0]);
-    mos_ordr(TO_IPC);
+    mos_ordr(left_mos,TO_NULL);
+    ipc_clear(mos_ipc[left_mos]);
+    mos_ordr(left_mos,TO_IPC);
     
     #ifdef DEBUG
         sprintf(msg,"Debug: start turning %d with mouse",target_angle);
@@ -112,11 +112,11 @@ int turn_mos(int target_angle){
     
     int mos_sum = 0;//pixel value sum
     
-    while(abs(mos_sum)<abs(target_angle)*parel[0]){
+    while(abs(mos_sum)<abs(target_angle)*parel[left_mos]){
         
         read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
         motor_stop();
-        ipc_int_recv_all(mos_ipc[0],&mos_sum);
+        ipc_int_recv_all(mos_ipc[left_mos],&mos_sum);
         
         if(target_angle<0){
             motor_ctrl(LEFT, BACKWARD, 30);
@@ -136,71 +136,12 @@ int turn_mos(int target_angle){
     
     motor_stop();
     
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[0]);
+    mos_ordr(left_mos,TO_NULL);
+    ipc_clear(mos_ipc[left_mos]);
     
     return 0;
 }
 
-int turn_mos_tem(int target_angle){
-    
-    
-///////////////////////set up timer start///////////////////////////
-    int timer_fd;
-    setup_timer(&timer_fd, 0,50000000, 0, 0);
-    uint64_t exp; //expire time
-///////////////////////set up timer end/////////////////////////////
-    
-    char msg[50];
-    //int mos_id = target_angle>0 ? right_mos:left_mos;
-    int mos_id = 0;
-    
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[mos_id]);
-    mos_ordr(TO_IPC);
-    
-    #ifdef DEBUG
-        sprintf(msg,"Debug: start turning %d with mouse",target_angle);
-        write_log(msg);
-    #endif
-    
-    
-    
-    int mos_sum = 0;//pixel value sum
-    
-    while(abs(mos_sum)<abs(target_angle)*parel[0]*(200/82.5)){
-        
-        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
-        motor_stop();
-        ipc_int_recv_all(mos_ipc[mos_id],&mos_sum);
-        
-        if(target_angle<0){
-            motor_ctrl(RIGHT, FORWARD, 30);
-        }
-        else{
-            motor_ctrl(LEFT, FORWARD, 30);
-        }
-        
-        #ifdef DEBUG
-            sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
-            write_log(msg);
-        #endif
-        
-    }
-    
-    motor_stop();
-    
-    while(1){
-        int tem;
-        read(mos_ipc[mos_id], &tem, sizeof(int));
-        printf("not good\n");
-    }
-    
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[mos_id]);
-    
-    return 0;
-}
 
 int go_mos(int distance){
     
@@ -212,19 +153,19 @@ int go_mos(int distance){
     
     char msg[50];
     
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[0]);
-    mos_ordr(TO_IPC);
+    mos_ordr(left_mos,TO_NULL);
+    ipc_clear(mos_ipc[left_mos]);
+    mos_ordr(left_mos,TO_IPC);
     
     sprintf(msg,"Info: start go_mos distance:%d ",distance);
     write_log(msg);
     
     int mos_sum = 0;//pixel value sum
-    while(abs(mos_sum)<abs(distance*pdrel[0])){
+    while(abs(mos_sum)<abs(distance*pdrel[left_mos])){
         
         read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
         motor_stop();
-        ipc_int_recv_all(mos_ipc[0],&mos_sum);
+        ipc_int_recv_all(mos_ipc[left_mos],&mos_sum);
         
         motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
         motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
@@ -238,8 +179,8 @@ int go_mos(int distance){
     
     motor_stop();
     
-    mos_ordr(TO_NULL);
-    ipc_clear(mos_ipc[0]);
+    mos_ordr(left_mos,TO_NULL);
+    ipc_clear(mos_ipc[left_mos]);
     
     return 0;
 }
@@ -277,21 +218,19 @@ int forward_to_qr(int distance){
     return cur_qr.angle;
 }
 
+
 void go_cir(int side, int r, int angle){
     char msg[50];
     
-    
     int left_distance;
     int right_distance;
-    
-    int state = 0;
     
     if(side == LEFT){
         left_distance = 2*3.14 * (r-82.5) * angle/ 360;
         right_distance = 2*3.14 * (r+82.5) * angle/ 360;
         
-        left_distance *= 1.10;
-        right_distance *= 1.10;
+        left_distance *= 1;
+        right_distance *= 1;
         
         sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
         write_log(msg);
@@ -300,11 +239,12 @@ void go_cir(int side, int r, int angle){
         
         motor_stop();
         
-        mos_ordr(TO_NULL);
+        mos_ordr(left_mos,TO_NULL);
+        mos_ordr(right_mos,TO_NULL);
         ipc_clear(mos_ipc[left_mos]);
         ipc_clear(mos_ipc[right_mos]);
-        mos_ordr(TO_IPC);
-        
+        mos_ordr(left_mos,TO_IPC);
+        mos_ordr(right_mos,TO_IPC);
         
         int left_sum = 0;//pixel value sum
         int right_sum = 0;
@@ -338,13 +278,11 @@ void go_cir(int side, int r, int angle){
                 break;
             }
             
-            if((float)((float)right_sum/(float)right_distance) > (float)((float)(left_sum)/(float)left_distance) ){
-                state = 0;
-                motor_ctrl(LEFT, FORWARD, 30);
+            if((float)((float)right_sum/(float)right_distance) < (float)((float)(left_sum*1)/(float)left_distance) ){
+                motor_ctrl(LEFT, FORWARD, 0);
             }
             else{
-                state = 1;
-                motor_ctrl(LEFT, FORWARD, 0);
+                motor_ctrl(LEFT, FORWARD, 30);
             }
             motor_ctrl(RIGHT, FORWARD, 30);
             
@@ -353,6 +291,11 @@ void go_cir(int side, int r, int angle){
         motor_stop();
         
     }
+    
+    mos_ordr(left_mos,TO_NULL);
+    mos_ordr(right_mos,TO_NULL);
+    ipc_clear(mos_ipc[left_mos]);
+    ipc_clear(mos_ipc[right_mos]);
     
     return;
 }

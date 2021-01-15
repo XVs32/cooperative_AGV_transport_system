@@ -10,6 +10,7 @@
 #include "ipc_handler.h"
 #include "log.h"
 #include "timer.h"
+#include "command.h"
 
 #define PI 3.14159265
 
@@ -21,29 +22,30 @@
 
 static int mou0_fd = -1;
 static int mou1_fd = -1;
-static int ordr;
+static int ordr[2];
 
 extern int mos_ipc[2];
 extern uint8_t agv_id;
 
 float parel[2];//pixel_angle_relation for mouse
 float pdrel[2];//pixel_distance_relation for mouse
-int left_mos;
-int right_mos;
+int left_mos; //this is 0 or 1
+int right_mos;//this is 0 or 1
 
 
 
 void mos_init(){
 	
-	ordr = 0;
+	ordr[0] = TO_NULL;
+	ordr[1] = TO_NULL;
 	mou0_fd = open_mos(0);
 	mou1_fd = open_mos(1);
 	
 	return;
 }
 
-void mos_ordr(int input){//qr_code result Output ReDiRect
-	ordr = input;
+void mos_ordr(int mouse_num, int input){//qr_code result Output ReDiRect
+	ordr[mouse_num] = input;
 	return;
 }
 
@@ -98,7 +100,7 @@ void* mos_reader(void* input){
 	
 	while(1){
 		read(fd,data,sizeof(int8_t)*4);
-		switch(ordr){
+		switch(ordr[mouse_num]){
 			case TO_NULL:
 				break;
 			case TO_SERVER:
@@ -139,37 +141,44 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 
 	qr_code init_qr = get_qr_angle();
 
-	mos_ordr(TO_NULL);
+	mos_ordr(0,TO_NULL);
+	mos_ordr(1,TO_NULL);
 	ipc_clear(mos_ipc[0]);
-	mos_ordr(TO_IPC);
+	ipc_clear(mos_ipc[1]);
+	mos_ordr(0,TO_IPC);
+	mos_ordr(1,TO_IPC);
 	
 	#ifdef DEBUG
 		write_log("Debug: start moscorr count down");
 	#endif
 	
-	int mos_sum = 0;//pixel value sum
-	while(abs(mos_sum)<6000){
+	motor_ctrl(LEFT, FORWARD, 30);
+	motor_ctrl(RIGHT, BACKWARD, 32);
+	
+	int mos_sum[2] = {0,0};//pixel value sum
+	while(abs(mos_sum[0])<6000){
 		
 		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
-		motor_stop();
 		
-		ipc_int_recv_all(mos_ipc[0],&mos_sum);
-		
-		motor_ctrl(LEFT, FORWARD, 30);
-		motor_ctrl(RIGHT, BACKWARD, 30);
-		
+		ipc_int_recv_all(mos_ipc[0],&mos_sum[0]);
+		ipc_int_recv_all(mos_ipc[1],&mos_sum[1]);
 		#ifdef DEBUG
-			sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
+			sprintf(msg,"Debug: waiting mouse_0, mos_sum = %d",mos_sum[0]);
+			write_log(msg);
+			sprintf(msg,"Debug: waiting mouse_1, mos_sum = %d",mos_sum[1]);
 			write_log(msg);
 		#endif
 	}
 	
 	motor_stop();
 	
-	mos_ordr(TO_NULL);
-	ipc_clear(mos_ipc[0]);
-	
 	sleep(1);
+	ipc_int_recv_all(mos_ipc[0],&mos_sum[0]);
+	ipc_int_recv_all(mos_ipc[1],&mos_sum[1]);
+	mos_ordr(0,TO_NULL);
+	mos_ordr(1,TO_NULL);
+	ipc_clear(mos_ipc[0]);
+	ipc_clear(mos_ipc[1]);
 	
 	#ifdef DEBUG
 		write_log("Debug: end moscorr count down");
@@ -183,11 +192,13 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		write_log("Error: cannot div by 0, where diff = 0. exit");
 		exit(1);
 	}
+	float total_sum = abs(mos_sum[0]) + abs(mos_sum[1]);
+	parel[0] = float(abs(mos_sum[0])) / float(diff);
+	pdrel[0] = float(abs(mos_sum[0])) / float(((2*PI*82.5)/360)*diff); //r = 82.5
+	parel[1] = float(abs(mos_sum[1])) / float(diff);
+	pdrel[1] = float(abs(mos_sum[1])) / float(((2*PI*82.5)/360)*diff); //r = 82.5
 
-	parel[0] = float(abs(mos_sum)) / float(diff);
-	pdrel[0] = float(abs(mos_sum)) / float(((2*PI*82.5)/360)*diff); //r = 82.5
-
-	if(mos_sum>0){
+	if(mos_sum[0]>0){
 		left_mos = 0;
 		right_mos = 1;
 	}
@@ -195,79 +206,78 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		left_mos = 1;
 		right_mos = 0;
 	}
-
+	
+	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
+	write_log(msg);
+	sprintf(msg,"Info: mouse_%d is right mouse",right_mos);
+	write_log(msg);	
+	
 	sprintf(msg,"Info: const angle of mouse_0: %f",parel[0]);
 	write_log(msg);
 	sprintf(msg,"Info: const distance of mouse_0: %f",pdrel[0]);
 	write_log(msg);
-
-
-	sleep(1);
-
-	motor_stop();
-	sleep(1);
-
-	init_qr = get_qr_angle();
-
-
-
-	#ifdef DEBUG
-		write_log("Debug: start moscorr count down");
-	#endif
-	
-	mos_ordr(TO_NULL);
-	ipc_clear(mos_ipc[1]);
-	mos_ordr(TO_IPC);
-
-	mos_sum = 0;
-	while(abs(mos_sum)<6000){
-		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
-		motor_stop();
-		
-		ipc_int_recv_all(mos_ipc[1],&mos_sum);
-		
-		motor_ctrl(LEFT, FORWARD, 30);
-		motor_ctrl(RIGHT, BACKWARD, 30);
-		
-		#ifdef DEBUG
-			sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
-			write_log(msg);
-		#endif
-	}
-
-	motor_stop();
-	sleep(1);
-
-	mos_ordr(TO_NULL);
-	ipc_clear(mos_ipc[1]);
-
-	#ifdef DEBUG
-		write_log("Debug: end moscorr count down");
-	#endif
-
-	cur_qr = get_qr_angle();//current qr code angle
-
-	diff = get_angle_diff(init_qr.angle,cur_qr.angle);
-
-	if(diff == 0){
-		write_log("Error: cannot div by 0, where diff = 0. exit");
-		exit(1);
-	}
-
-	parel[1] = float(abs(mos_sum)) / float(diff);
-	pdrel[1] = float(abs(mos_sum)) / float(((2*PI*82.5)/360)*diff); //r = 82.5
-
 	sprintf(msg,"Info: const angle of mouse_1: %f",parel[1]);
 	write_log(msg);
 	sprintf(msg,"Info: const distance of mouse_1: %f",pdrel[1]);
 	write_log(msg);
+	
+	sleep(1);
+	
+	turn_qr(270);
+	
+	
+	int distance = 250;
+	
 
-	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
+	mos_ordr(left_mos,TO_NULL);
+	ipc_clear(mos_ipc[left_mos]);
+	mos_ordr(left_mos,TO_IPC);
+
+	sprintf(msg,"Info: start go_mos distance:%d ",distance);
 	write_log(msg);
 
-	sprintf(msg,"Info: mouse_%d is right mouse",right_mos);
-	write_log(msg);
 
+
+	mos_sum[left_mos] = 0;//pixel value sum
+	motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
+	motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
+	while(abs(mos_sum[left_mos])<abs(distance*pdrel[left_mos])){
+
+		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
+		
+		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
+		
+		#ifdef DEBUG
+			sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum[left_mos]);
+			write_log(msg);
+		#endif
+
+	}
+	
+	int flag = 0;
+	while(flag == 0){
+		
+		qr_code cur = get_qr_angle();
+		
+		if(cur.angle != 500){
+			motor_stop();
+			flag = 1;
+		}
+		
+		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
+		
+	}
+	
+	mos_ordr(left_mos,TO_NULL);
+	ipc_clear(mos_ipc[left_mos]);
+	
+	
+	
+	pdrel[left_mos] = mos_sum[left_mos] / 500; //r = 82.5
+	sprintf(msg,"Info: const distance of left_mos: %f",pdrel[left_mos]);
+	write_log(msg);
+	
+	
 	return;
 }
 

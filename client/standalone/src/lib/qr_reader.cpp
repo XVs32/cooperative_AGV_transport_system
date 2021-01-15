@@ -189,7 +189,7 @@ void* qr_reader(void *){
 		
 		uchar *image_buf;
 		image_buf = quirc_begin(qr, NULL, NULL);
-		memcpy(image_buf, (uchar *)IMAGE[CAMERA_PP].data , sizeof(char)*320*240);//slow, need fix of quric
+		memcpy(image_buf, (uchar *)IMAGE[CAMERA_PP].data , sizeof(char)*320*240);//slow, need fix of quric    
 		
 		quirc_end(qr);
 		

@@ -96,23 +96,21 @@ int main (){
 	printf("into moscorr\n");
 	moscorr();
 	sleep(1);
+	turn_qr(270);
+	sleep(1);
+	go_mos(500);
+	sleep(1);
+	turn_qr(90);
+	sleep(1);
+	go_mos(500);
+	/*
 	turn_qr(90);
 	sleep(1);
 	go_cir(LEFT,250,180);
 	sleep(1);
 	turn_qr(90);
-	forward_to_qr(300);
-	/*sleep(1);
-	turn_qr(178);
 	sleep(1);
 	go_mos(300);
-	sleep(1);
-	turn_mos(-45);
-	sleep(1);
-	go_cir(LEFT,424,45);
-	sleep(1);*/
-	
-	
 	sleep(1);
 	turn_qr(178);
 	sleep(1);
@@ -136,6 +134,7 @@ int main (){
 	sleep(1);
 	turn_qr(180);
 	sleep(1);
+	*/
 	printf("finsh, back to main.\n");
 	
 	pthread_join(t_mos_reader_0,NULL); //None of this pthread_join should exec.

@@ -14,9 +14,9 @@
 #endif
 
 void mos_init();
-void mos_ordr(int);
-int open_mos(int);
-void* mos_reader(void *);
+void mos_ordr(int mouse_num, int input);
+int open_mos(int mouse_num);
+void* mos_reader(void* input);
 void moscorr();
 
 #endif
