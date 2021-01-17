@@ -193,9 +193,10 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		exit(1);
 	}
 	float total_sum = abs(mos_sum[0]) + abs(mos_sum[1]);
-	parel[0] = float(abs(mos_sum[0])) / float(diff);
+	parel[0] = float(abs(mos_sum[0]) + abs(mos_sum[1])) / float(diff*2);
+	parel[1] = parel[0];
+	
 	pdrel[0] = float(abs(mos_sum[0])) / float(((2*PI*82.5)/360)*diff); //r = 82.5
-	parel[1] = float(abs(mos_sum[1])) / float(diff);
 	pdrel[1] = float(abs(mos_sum[1])) / float(((2*PI*82.5)/360)*diff); //r = 82.5
 
 	if(mos_sum[0]>0){
@@ -207,20 +208,6 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		right_mos = 0;
 	}
 	
-	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
-	write_log(msg);
-	sprintf(msg,"Info: mouse_%d is right mouse",right_mos);
-	write_log(msg);	
-	
-	sprintf(msg,"Info: const angle of mouse_0: %f",parel[0]);
-	write_log(msg);
-	sprintf(msg,"Info: const distance of mouse_0: %f",pdrel[0]);
-	write_log(msg);
-	sprintf(msg,"Info: const angle of mouse_1: %f",parel[1]);
-	write_log(msg);
-	sprintf(msg,"Info: const distance of mouse_1: %f",pdrel[1]);
-	write_log(msg);
-	
 	sleep(1);
 	
 	turn_qr(270);
@@ -229,11 +216,14 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	int distance = 250;
 	
 
-	mos_ordr(left_mos,TO_NULL);
-	ipc_clear(mos_ipc[left_mos]);
-	mos_ordr(left_mos,TO_IPC);
+	mos_ordr(0,TO_NULL);
+	mos_ordr(1,TO_NULL);
+	ipc_clear(mos_ipc[0]);
+	ipc_clear(mos_ipc[1]);
+	mos_ordr(0,TO_IPC);
+	mos_ordr(1,TO_IPC);
 
-	sprintf(msg,"Info: start go_mos distance:%d ",distance);
+	sprintf(msg,"Info: start moscorr distance:%d ",distance);
 	write_log(msg);
 
 
@@ -246,9 +236,12 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
 		
 		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
+		ipc_int_recv_all(mos_ipc[right_mos],&mos_sum[right_mos]);
 		
 		#ifdef DEBUG
-			sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum[left_mos]);
+			sprintf(msg,"Debug: waiting mouse, mos_sum[left_mos] = %d",mos_sum[left_mos]);
+			write_log(msg);
+			sprintf(msg,"Debug: waiting mouse, mos_sum[right_mos] = %d",mos_sum[right_mos]);
 			write_log(msg);
 		#endif
 
@@ -265,18 +258,33 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		}
 		
 		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
+		ipc_int_recv_all(mos_ipc[right_mos],&mos_sum[right_mos]);
 		
 	}
 	
-	mos_ordr(left_mos,TO_NULL);
-	ipc_clear(mos_ipc[left_mos]);
+	mos_ordr(0,TO_NULL);
+	mos_ordr(1,TO_NULL);
+	ipc_clear(mos_ipc[0]);
+	ipc_clear(mos_ipc[1]);
 	
 	
 	
-	pdrel[left_mos] = mos_sum[left_mos] / 500; //r = 82.5
-	sprintf(msg,"Info: const distance of left_mos: %f",pdrel[left_mos]);
+	pdrel[left_mos] = mos_sum[left_mos] / 500;
+	pdrel[right_mos] = mos_sum[right_mos] / 500;
+	
+	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
 	write_log(msg);
+	sprintf(msg,"Info: mouse_%d is right mouse",right_mos);
+	write_log(msg);	
 	
+	sprintf(msg,"Info: const angle of mouse_0: %f",parel[0]);
+	write_log(msg);
+	sprintf(msg,"Info: const distance of mouse_0: %f",pdrel[0]);
+	write_log(msg);
+	sprintf(msg,"Info: const angle of mouse_1: %f",parel[1]);
+	write_log(msg);
+	sprintf(msg,"Info: const distance of mouse_1: %f",pdrel[1]);
+	write_log(msg);
 	
 	return;
 }

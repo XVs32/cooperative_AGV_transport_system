@@ -175,13 +175,10 @@ void* qr_reader(void *){
 	int moscorr_flag = 0;
 	int count = 0;
 	
-	
 	struct quirc *qr;
 	
 	qr = quirc_new();
 	quirc_resize(qr, 320, 240);
-	
-	
 	
 	while(1){
 		

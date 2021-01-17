@@ -93,7 +93,7 @@ int turn_mos(int target_angle){
     
 ///////////////////////set up timer start///////////////////////////
     int timer_fd;
-    setup_timer(&timer_fd, 0,50000000, 0, 0);
+    setup_timer(&timer_fd, 0,5000000, 0, 0);
     uint64_t exp; //expire time
 ///////////////////////set up timer end/////////////////////////////
     
@@ -114,7 +114,7 @@ int turn_mos(int target_angle){
     
     while(abs(mos_sum)<abs(target_angle)*parel[left_mos]){
         
-        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
+        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.005s
         motor_stop();
         ipc_int_recv_all(mos_ipc[left_mos],&mos_sum);
         
@@ -147,7 +147,7 @@ int go_mos(int distance){
     
 ///////////////////////set up timer start///////////////////////////
     int timer_fd;
-    setup_timer(&timer_fd, 0,50000000, 0, 0);
+    setup_timer(&timer_fd, 0,5000000, 0, 0);
     uint64_t exp; //expire time
 ///////////////////////set up timer end///////////////////////////
     
@@ -163,7 +163,7 @@ int go_mos(int distance){
     int mos_sum = 0;//pixel value sum
     while(abs(mos_sum)<abs(distance*pdrel[left_mos])){
         
-        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
+        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.005s
         motor_stop();
         ipc_int_recv_all(mos_ipc[left_mos],&mos_sum);
         
