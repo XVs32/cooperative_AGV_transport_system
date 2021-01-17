@@ -18,5 +18,6 @@ void mos_ordr(int mouse_num, int input);
 int open_mos(int mouse_num);
 void* mos_reader(void* input);
 void moscorr();
+void mos_tr(int fd);
 
 #endif

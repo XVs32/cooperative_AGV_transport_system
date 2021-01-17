@@ -20,8 +20,7 @@
 #include <stdint.h>
 #include <signal.h>
 
-static int mou0_fd = -1;
-static int mou1_fd = -1;
+static int mos_fd[2] = {-1,-1};
 static int ordr[2];
 
 extern int mos_ipc[2];
@@ -38,8 +37,8 @@ void mos_init(){
 	
 	ordr[0] = TO_NULL;
 	ordr[1] = TO_NULL;
-	mou0_fd = open_mos(0);
-	mou1_fd = open_mos(1);
+	mos_fd[0] = open_mos(0);
+	mos_fd[1] = open_mos(1);
 	
 	return;
 }
@@ -72,20 +71,21 @@ int open_mos(int mouse_num){
 	return fd;
 }
 
+void mos_tr(int fd){
+	int8_t buf = 0;
+	write(fd, &buf, sizeof(int8_t));
+	write(fd, &buf, sizeof(int8_t));
+	write(fd, &buf, sizeof(int8_t));
+	write(fd, &buf, sizeof(int8_t));
+	return;
+}
+
 void* mos_reader(void* input){
 	
 	int ipc_token = ipc_connect();
 	
 	int mouse_num = *(int*)input;
-	int fd;
-	switch(mouse_num){
-		case 0:
-			fd = mou0_fd;
-			break;
-		case 1:
-			fd = mou1_fd;
-			break;
-	}
+	int fd = mos_fd[mouse_num];
 	
 ///////////////////////lock cpu start///////////////////////////
 	cpu_set_t mask;
@@ -97,9 +97,10 @@ void* mos_reader(void* input){
 ///////////////////////lock cpu end///////////////////////////
 	
 	int8_t data[4];
-	
+	volatile int optimised_disable = 0;
 	while(1){
 		read(fd,data,sizeof(int8_t)*4);
+		optimised_disable = data[0];
 		switch(ordr[mouse_num]){
 			case TO_NULL:
 				break;
@@ -113,7 +114,6 @@ void* mos_reader(void* input){
 				//mos_sum[mouse_num] += data[2];
 				break;
 				
-			
 			default:
 				write_log("Error: Undefined mouse data output flag, exit...");
 				exit(1);
@@ -140,9 +140,10 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	sleep(1);
 
 	qr_code init_qr = get_qr_angle();
-
-	mos_ordr(0,TO_NULL);
-	mos_ordr(1,TO_NULL);
+	
+	mos_tr(mos_fd[0]);
+	mos_tr(mos_fd[1]);
+	
 	ipc_clear(mos_ipc[0]);
 	ipc_clear(mos_ipc[1]);
 	mos_ordr(0,TO_IPC);
@@ -215,20 +216,20 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	
 	int distance = 250;
 	
-
-	mos_ordr(0,TO_NULL);
-	mos_ordr(1,TO_NULL);
+	motor_stop();
+	mos_tr(mos_fd[0]);
+	mos_tr(mos_fd[1]);
 	ipc_clear(mos_ipc[0]);
 	ipc_clear(mos_ipc[1]);
 	mos_ordr(0,TO_IPC);
 	mos_ordr(1,TO_IPC);
-
+	
 	sprintf(msg,"Info: start moscorr distance:%d ",distance);
 	write_log(msg);
-
-
-
+	
+	
 	mos_sum[left_mos] = 0;//pixel value sum
+	mos_sum[right_mos] = 0;//pixel value sum
 	motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
 	motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
 	while(abs(mos_sum[left_mos])<abs(distance*pdrel[left_mos])){
@@ -247,6 +248,8 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 
 	}
 	
+	write_log("Debug: half way point");
+	
 	int flag = 0;
 	while(flag == 0){
 		
@@ -260,6 +263,13 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
 		ipc_int_recv_all(mos_ipc[right_mos],&mos_sum[right_mos]);
 		
+		#ifdef DEBUG
+			sprintf(msg,"Debug: waiting mouse, mos_sum[left_mos] = %d",mos_sum[left_mos]);
+			write_log(msg);
+			sprintf(msg,"Debug: waiting mouse, mos_sum[right_mos] = %d",mos_sum[right_mos]);
+			write_log(msg);
+		#endif
+		
 	}
 	
 	mos_ordr(0,TO_NULL);
@@ -269,8 +279,8 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	
 	
 	
-	pdrel[left_mos] = mos_sum[left_mos] / 500;
-	pdrel[right_mos] = mos_sum[right_mos] / 500;
+	pdrel[left_mos] = float(mos_sum[left_mos]) / 500;
+	pdrel[right_mos] = float(mos_sum[right_mos]) / 500;
 	
 	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
 	write_log(msg);

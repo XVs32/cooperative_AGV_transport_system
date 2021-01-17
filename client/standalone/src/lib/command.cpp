@@ -91,13 +91,9 @@ int turn_qr(int target_angle){
 
 int turn_mos(int target_angle){
     
-///////////////////////set up timer start///////////////////////////
-    int timer_fd;
-    setup_timer(&timer_fd, 0,5000000, 0, 0);
-    uint64_t exp; //expire time
-///////////////////////set up timer end/////////////////////////////
-    
     char msg[50];
+    
+    motor_stop();
     
     mos_ordr(left_mos,TO_NULL);
     ipc_clear(mos_ipc[left_mos]);
@@ -108,24 +104,21 @@ int turn_mos(int target_angle){
         write_log(msg);
     #endif
     
-    
+    if(target_angle<0){
+        motor_ctrl(LEFT, BACKWARD, 30);
+        motor_ctrl(RIGHT, FORWARD, 30);
+    }
+    else{
+        motor_ctrl(LEFT, FORWARD, 30);
+        motor_ctrl(RIGHT, BACKWARD, 30);
+    }
     
     int mos_sum = 0;//pixel value sum
-    
+    int tem;
     while(abs(mos_sum)<abs(target_angle)*parel[left_mos]){
         
-        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.005s
-        motor_stop();
-        ipc_int_recv_all(mos_ipc[left_mos],&mos_sum);
-        
-        if(target_angle<0){
-            motor_ctrl(LEFT, BACKWARD, 30);
-            motor_ctrl(RIGHT, FORWARD, 30);
-        }
-        else{
-            motor_ctrl(LEFT, FORWARD, 30);
-            motor_ctrl(RIGHT, BACKWARD, 30);
-        }
+        recv(mos_ipc[left_mos], &tem, sizeof(int),MSG_WAITALL);
+        mos_sum += tem;
         
         #ifdef DEBUG
             sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
@@ -145,13 +138,9 @@ int turn_mos(int target_angle){
 
 int go_mos(int distance){
     
-///////////////////////set up timer start///////////////////////////
-    int timer_fd;
-    setup_timer(&timer_fd, 0,5000000, 0, 0);
-    uint64_t exp; //expire time
-///////////////////////set up timer end///////////////////////////
-    
     char msg[50];
+    
+    motor_stop();
     
     mos_ordr(left_mos,TO_NULL);
     ipc_clear(mos_ipc[left_mos]);
@@ -160,16 +149,15 @@ int go_mos(int distance){
     sprintf(msg,"Info: start go_mos distance:%d ",distance);
     write_log(msg);
     
+    motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
+    motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
+    
     int mos_sum = 0;//pixel value sum
+    int tem;
     while(abs(mos_sum)<abs(distance*pdrel[left_mos])){
         
-        read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.005s
-        motor_stop();
-        ipc_int_recv_all(mos_ipc[left_mos],&mos_sum);
-        
-        motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
-        motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
-        
+        recv(mos_ipc[left_mos], &tem, sizeof(int),MSG_WAITALL);
+        mos_sum += tem;
         #ifdef DEBUG
             sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
             write_log(msg);
