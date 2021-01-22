@@ -1,6 +1,6 @@
 
 CC=g++
-opt=-O3 -c
+opt=-O2 -c
 
 ar=ar rcs
 
@@ -10,7 +10,7 @@ bin_adr=./bin
 
 
 ifdef DEBUG
-	opt=-O3 -D DEBUG -c
+	opt=-O2 -D DEBUG -c
 endif
 
 all: clean log ipc_handler tcp_handler timerfd camera qr_code mouse endec motor command_handler command main

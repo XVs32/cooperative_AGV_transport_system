@@ -194,7 +194,7 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 		exit(1);
 	}
 	float total_sum = abs(mos_sum[0]) + abs(mos_sum[1]);
-	parel[0] = float(abs(mos_sum[0]) + abs(mos_sum[1])) / float(diff*2);
+	parel[0] = total_sum / float(diff*2);
 	parel[1] = parel[0];
 	
 	pdrel[0] = float(abs(mos_sum[0])) / float(((2*PI*82.5)/360)*diff); //r = 82.5
@@ -212,7 +212,7 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	sleep(1);
 	
 	turn_qr(270);
-	
+	qr_code start_qr = get_qr_angle();//current qr code angle
 	
 	int distance = 250;
 	
@@ -233,8 +233,6 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
 	motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
 	while(abs(mos_sum[left_mos])<abs(distance*pdrel[left_mos])){
-
-		read(timer_fd, &exp, sizeof(uint64_t));//readable for every 0.05s
 		
 		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
 		ipc_int_recv_all(mos_ipc[right_mos],&mos_sum[right_mos]);
@@ -248,14 +246,17 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 
 	}
 	
-	write_log("Debug: half way point");
+	#ifdef DEBUG
+		write_log("Debug: half way point");
+	#endif
 	
 	int flag = 0;
+	qr_code end_qr;//current qr code angle
 	while(flag == 0){
 		
-		qr_code cur = get_qr_angle();
+		end_qr = get_qr_angle();
 		
-		if(cur.angle != 500){
+		if(end_qr.angle != 500){
 			motor_stop();
 			flag = 1;
 		}
@@ -279,8 +280,8 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	
 	
 	
-	pdrel[left_mos] = float(mos_sum[left_mos]) / 500;
-	pdrel[right_mos] = float(mos_sum[right_mos]) / 500;
+	pdrel[left_mos] = float(mos_sum[left_mos]) / (500 - (end_qr.y - start_qr.y)*0.3);
+	pdrel[right_mos] = float(mos_sum[right_mos]) / (500 - (end_qr.y - start_qr.y)*0.3);
 	
 	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
 	write_log(msg);

@@ -158,6 +158,7 @@ int go_mos(int distance){
         
         recv(mos_ipc[left_mos], &tem, sizeof(int),MSG_WAITALL);
         mos_sum += tem;
+        
         #ifdef DEBUG
             sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
             write_log(msg);
@@ -173,19 +174,21 @@ int go_mos(int distance){
     return 0;
 }
 
-int forward_to_qr(int distance){
+int qr_to_qr(int init_angle, int distance){
     
     char msg[50];
     sprintf(msg,"Info: start forward_to_qr distance:%d ",distance);
     write_log(msg);
     
-    qr_code cur_qr = get_qr_angle();//current qr code angle
-    turn_qr( ( (int)(cur_qr.angle - atan2( (cur_qr.x - 160) *0.3 ,distance) ) + 360) % 360);
+    turn_qr(init_angle);
     
-    go_mos(distance);
+    qr_code cur_qr = get_qr_angle();//current qr code angle
+    turn_qr( ( (int)(init_angle - atan2( (cur_qr.x - 160) *0.3 ,distance) ) + 360) % 360);
     
     cur_qr = get_qr_angle();//current qr code angle
-        
+    go_mos(distance - (cur_qr.y - 120) * 0.3 );
+    
+    cur_qr = get_qr_angle();//current qr code angle
     if(cur_qr.angle != 500){
         return cur_qr.angle;
     }

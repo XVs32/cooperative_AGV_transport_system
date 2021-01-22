@@ -96,13 +96,9 @@ int main (){
 	printf("into moscorr\n");
 	moscorr();
 	sleep(1);
-	turn_qr(270);
+	qr_to_qr(270,500);
 	sleep(1);
-	go_mos(500);
-	sleep(1);
-	turn_qr(90);
-	sleep(1);
-	go_mos(500);
+	qr_to_qr(90,500);
 	/*
 	turn_qr(90);
 	sleep(1);
