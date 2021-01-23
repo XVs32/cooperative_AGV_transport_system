@@ -73,7 +73,7 @@ main:
 	-L ./src/lib/ZXing/ZXingCore \
 	-lCommandHandler -lMouseCorrection -lMotor -lCamera -lQrReader -lMouse -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc \
 	-lZXingCore -lopencv_core -lraspicam -lraspicam_cv -lmmal_core -lmmal_util -lmmal \
-	-lopencv_imgproc -lopencv_imgcodecs -lpthread -lwiringPi \
+	-lopencv_imgproc -lopencv_imgcodecs -lpthread -lwiringPi -lm \
 	-rdynamic \
 	-Wall -Wextra \
 	-o $(bin_adr)/main

@@ -186,7 +186,7 @@ int qr_to_qr(int init_angle, int distance){
     turn_qr( ( (int)(init_angle - atan2( (cur_qr.x - 160) *0.3 ,distance) ) + 360) % 360);
     
     cur_qr = get_qr_angle();//current qr code angle
-    go_mos(distance - (cur_qr.y - 120) * 0.3 );
+    go_mos(distance + (cur_qr.y - 120) * 0.3 );
     
     cur_qr = get_qr_angle();//current qr code angle
     if(cur_qr.angle != 500){
@@ -248,14 +248,15 @@ void go_cir(int side, int r, int angle){
                 flag = 1;
                 
                 int tem;
-                while(recv(mos_ipc[left_mos],&tem, sizeof(int), MSG_DONTWAIT)>0){
-                    left_sum += tem;
-                    flag = 0;
-                }
                 while(recv(mos_ipc[right_mos],&tem, sizeof(int), MSG_DONTWAIT)>0){
                     right_sum += tem;
                     flag = 0;
                 }
+                while(recv(mos_ipc[left_mos],&tem, sizeof(int), MSG_DONTWAIT)>0){
+                    left_sum += tem;
+                    flag = 0;
+                }
+                
                 
             }
             
@@ -265,7 +266,7 @@ void go_cir(int side, int r, int angle){
             #endif
             
             
-            if(left_sum >abs(left_distance*pdrel[left_mos])){
+            if(right_sum > abs(right_distance*pdrel[right_mos])){
                 break;
             }
             

@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <signal.h>
+#include <math.h>
 
 static int mos_fd[2] = {-1,-1};
 static int ordr[2];
@@ -278,10 +279,12 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	ipc_clear(mos_ipc[0]);
 	ipc_clear(mos_ipc[1]);
 	
+	float walked = pow((500 - (end_qr.y - start_qr.y)*0.3),2) +
+					pow(abs(end_qr.x - start_qr.x)*0.3,2);
+	walked = pow(walked , 0.5);
 	
-	
-	pdrel[left_mos] = float(mos_sum[left_mos]) / (500 - (end_qr.y - start_qr.y)*0.3);
-	pdrel[right_mos] = float(mos_sum[right_mos]) / (500 - (end_qr.y - start_qr.y)*0.3);
+	pdrel[left_mos] = float(mos_sum[left_mos]) / walked;
+	pdrel[right_mos] = float(mos_sum[right_mos]) / walked;
 	
 	sprintf(msg,"Info: mouse_%d is left mouse",left_mos);
 	write_log(msg);

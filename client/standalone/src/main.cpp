@@ -99,6 +99,13 @@ int main (){
 	qr_to_qr(270,500);
 	sleep(1);
 	qr_to_qr(90,500);
+	sleep(1);
+	qr_to_qr(90,500);
+	sleep(1);
+	turn_qr(0);
+	sleep(1);
+	go_cir(LEFT,250,180);
+	
 	/*
 	turn_qr(90);
 	sleep(1);
