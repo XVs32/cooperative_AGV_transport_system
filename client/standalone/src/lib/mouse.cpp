@@ -231,8 +231,8 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	
 	mos_sum[left_mos] = 0;//pixel value sum
 	mos_sum[right_mos] = 0;//pixel value sum
-	motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
-	motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
+	motor_ctrl(LEFT, FORWARD, 30);
+	motor_ctrl(RIGHT, FORWARD, 30);
 	while(abs(mos_sum[left_mos])<abs(distance*pdrel[left_mos])){
 		
 		ipc_int_recv_all(mos_ipc[left_mos],&mos_sum[left_mos]);
@@ -244,7 +244,7 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 			sprintf(msg,"Debug: waiting mouse, mos_sum[right_mos] = %d",mos_sum[right_mos]);
 			write_log(msg);
 		#endif
-
+		
 	}
 	
 	#ifdef DEBUG
@@ -282,6 +282,9 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	float walked = pow((500 - (end_qr.y - start_qr.y)*0.3),2) +
 					pow(abs(end_qr.x - start_qr.x)*0.3,2);
 	walked = pow(walked , 0.5);
+	
+	sprintf(msg,"Debug: distance walked: %f",walked);
+	write_log(msg);
 	
 	pdrel[left_mos] = float(mos_sum[left_mos]) / walked;
 	pdrel[right_mos] = float(mos_sum[right_mos]) / walked;

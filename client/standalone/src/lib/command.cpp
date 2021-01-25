@@ -64,11 +64,16 @@ int turn_qr(int target_angle){
         #endif
         
         if(cur_qr.y<100 || cur_qr.y>140){
-            go_mos((cur_qr.y - 120)*0.3);
+            go_mos((cur_qr.y - 120)*0.3*0.5);
         }
         
-        if(diff > 1 || diff < -1){
+        
+        if(diff > 30 || diff < -30){
+            turn_mos(30 * (diff/abs(diff)));
+        }
+        else if(diff > 1 || diff < -1){
             turn_mos(diff >> 1);
+            usleep(200000);
         }
         else{
             usleep(200000);
@@ -76,7 +81,7 @@ int turn_qr(int target_angle){
             continue;
         }
         
-        usleep(200000);
+        //usleep(200000);
         count = 10;
     }
     
@@ -149,8 +154,8 @@ int go_mos(int distance){
     sprintf(msg,"Info: start go_mos distance:%d ",distance);
     write_log(msg);
     
-    motor_ctrl(LEFT, distance>>(sizeof(int)*7), 30);
-    motor_ctrl(RIGHT, distance>>(sizeof(int)*7), 30);
+    motor_ctrl(LEFT, distance>>(sizeof(int)*8), 30);
+    motor_ctrl(RIGHT, distance>>(sizeof(int)*8), 30);
     
     int mos_sum = 0;//pixel value sum
     int tem;
@@ -177,7 +182,7 @@ int go_mos(int distance){
 int qr_to_qr(int init_angle, int distance){
     
     char msg[50];
-    sprintf(msg,"Info: start forward_to_qr distance:%d ",distance);
+    
     write_log(msg);
     
     turn_qr(init_angle);
@@ -187,6 +192,11 @@ int qr_to_qr(int init_angle, int distance){
     
     cur_qr = get_qr_angle();//current qr code angle
     go_mos(distance + (cur_qr.y - 120) * 0.3 );
+    
+    sprintf(msg,"Info: start qr_to_qr distance:%d ",distance);
+    write_log(msg);
+    sprintf(msg,"Info: qr_to_qr bias distance:%d ",distance + (cur_qr.y - 120) * 0.3 );
+    write_log(msg);
     
     cur_qr = get_qr_angle();//current qr code angle
     if(cur_qr.angle != 500){
@@ -270,7 +280,7 @@ void go_cir(int side, int r, int angle){
                 break;
             }
             
-            if((float)((float)right_sum/(float)right_distance) < (float)((float)(left_sum*1)/(float)left_distance) ){
+            if((float)((float)(right_sum*1.10)/(float)right_distance) < (float)((float)(left_sum*1)/(float)left_distance) ){
                 motor_ctrl(LEFT, FORWARD, 0);
             }
             else{
