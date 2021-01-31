@@ -1,12 +1,10 @@
 #ifndef COMMAND
 #define COMMAND
 
-
-
-int turn_qr(int target_angle);
-int turn_mos(int target_angle);
-int go_mos(int distance);
-int qr_to_qr(int init_angle, int distance);
-void go_cir(int side, int r, int angle);
+int qr_turn(int target_angle);
+int mos_turn(int target_angle);
+int mos_go(int distance);
+int qr_to_qr(u_int16_t init_angle, int distance);
+void mos_cir(u_int8_t side, u_int16_t angle, u_int16_t r);
 
 #endif

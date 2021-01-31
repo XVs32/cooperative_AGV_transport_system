@@ -1,29 +1,35 @@
 #ifndef ENDEC
 #define ENDEC
 
+#ifndef STDINT
+#define ENDEC
+#include <stdint.h>
+#endif
+
 typedef struct m_sensor_data{
-    unsigned char id;
-    unsigned char type;
-    u_int32_t value;
+    u_int8_t  id;
+    u_int8_t type;
+    u_int32_t val;
 }sensor_data;
 
 typedef struct m_cam_data{
-    unsigned short id;
-    unsigned short angle;
+    u_int16_t id;
+    u_int16_t angle;
 }cam_data;
 
 typedef struct m_mouse_data{
-    char x;
-    char y;
+    int8_t x;
+    int8_t y;
 }mouse_data;
 
 typedef struct m_gyro_data{
-    unsigned short angle;
+    u_int16_t angle;
 }gyro_data;
 
 typedef struct m_command_data{
-    unsigned short op;
-    unsigned short value;
+    u_int8_t pf; //prefix
+    u_int16_t op;
+    u_int16_t val;
 }command_data;
 
 

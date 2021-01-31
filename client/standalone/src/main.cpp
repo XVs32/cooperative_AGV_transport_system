@@ -26,10 +26,11 @@
 
 using namespace std;
 
-uint8_t agv_id = 77;//temporary setup
+
 
 struct timespec now;
 
+extern uint8_t agv_id;
 extern int mos_ipc[2];
 extern int qr_ipc;
 extern int camera_ipc;

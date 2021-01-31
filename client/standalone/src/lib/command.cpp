@@ -30,7 +30,7 @@ extern int right_mos;
 
 
 
-int turn_qr(int target_angle){
+int qr_turn(int target_angle){
     
     char msg[50];
     #ifdef DEBUG
@@ -94,7 +94,7 @@ int turn_qr(int target_angle){
     
 }
 
-int turn_mos(int target_angle){
+int mos_turn(int target_angle){
     
     char msg[50];
     
@@ -141,7 +141,7 @@ int turn_mos(int target_angle){
 }
 
 
-int go_mos(int distance){
+int mos_go(int distance){
     
     char msg[50];
     
@@ -179,7 +179,7 @@ int go_mos(int distance){
     return 0;
 }
 
-int qr_to_qr(int init_angle, int distance){
+int qr_to_qr(u_int16_t init_angle, int distance){
     
     char msg[50];
     
@@ -220,7 +220,7 @@ int qr_to_qr(int init_angle, int distance){
 }
 
 
-void go_cir(int side, int r, int angle){
+void mos_cir(u_int8_t side, u_int16_t angle, u_int16_t r){
     char msg[50];
     
     int left_distance;
@@ -249,7 +249,8 @@ void go_cir(int side, int r, int angle){
         
         int left_sum = 0;//pixel value sum
         int right_sum = 0;
-        int max_diff = 0;
+        
+        int mode = 0;
         
         while(1){
             
@@ -274,7 +275,6 @@ void go_cir(int side, int r, int angle){
                 sprintf(msg,"DEBUG: left_sum:%d, right_sum:%d",left_sum,right_sum);
                 write_log(msg);
             #endif
-            
             
             if(right_sum > abs(right_distance*pdrel[right_mos])){
                 break;

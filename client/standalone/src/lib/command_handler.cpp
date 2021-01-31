@@ -15,39 +15,90 @@
 #include "command_handler.h"
 #include "ipc_handler.h"
 
+extern uint8_t agv_id;
+
 void* command_handler(void *){
     
-    int ipc_token = ipc_connect();
+    //int ipc_token = ipc_connect();
     
-    u_int16_t command_buf;
+    u_int16_t instruction;
     command_data command;
     
     while(1){
         
-        recv_c(&command_buf);
-        command = command_dcode(command_buf);
-        printf("command in: \n");
-        printf("op:%d value:%d\n\n",command.op, command.value);
+        recv_c(&instruction);
+        command = command_dcode(instruction);
+        
+        #ifdef DEBUG
+            sprintf(msg,"Debug: command in: pf:%d op:%d value:%d",command.pf, command.op, command.val);
+            write_log(msg);
+        #endif
         
         switch(command.op){
+            case 0:
+                agv_id = command.val;
+                break;
             case 1:
-                motor_ctrl(LEFT,FORWARD,command.value);
+                moscorr();
                 break;
             case 2:
-                motor_ctrl(LEFT,BACKWARD,command.value);
+                qr_turn(command.val);
                 break;
             case 3:
-                motor_ctrl(RIGHT,FORWARD,command.value);
+                mos_turn(command.val);
                 break;
             case 4:
-                motor_ctrl(RIGHT,BACKWARD,command.value);
+                mos_go(command.val);
                 break;
-            case 5://rotate left to angle
+            case 5:
+                u_int8_t side;
+                int16_t angle;
+                u_int16_t r;
+                
+                int count = 2;
+                while(1){
+                    switch(command.pf){
+                        case 0:
+                            side = ( command.val >> 9 ) & 0x01;
+                            angle = (command.val << 7) >> 7;
+                            break;
+                        case 1:
+                            r = command.val;
+                            break;
+                    }
+                    
+                    if(!--count){ break; }
+                    
+                    recv_c(&instruction);
+                    command = command_dcode(instruction);
+                }
+                
+                mos_cir(side,angle,r);
+                
                 break;
-            case 6://rotate right to angle
-                break;
-            case 7:
-                //moucorr();
+            case 6:
+                u_int16_t init_angle;
+                int16_t distance;
+                
+                int count = 2;
+                while(1){
+                    switch(command.pf){
+                        case 0:
+                            init_angle = command.val;
+                            break;
+                        case 1:
+                            distance = (command.val << 6) >> 6;
+                            break;
+                    }
+                    
+                    if(!--count){ break; }
+                    
+                    recv_c(&instruction);
+                    command = command_dcode(instruction);
+                }
+                
+                qr_to_qr(init_angle,distance);
+                
                 break;
             default:
                 break;
@@ -55,8 +106,9 @@ void* command_handler(void *){
         
     }
     
-    
+
 }
+
 
 
 

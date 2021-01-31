@@ -14,7 +14,7 @@
 #define COMMAND_SIZE sizeof(u_int16_t)
 
 int sockfd = 0;
-extern uint8_t agv_id;
+uint8_t agv_id = 999;//default, should be renew after the first contact with server
 
 void tcp_init(){
     

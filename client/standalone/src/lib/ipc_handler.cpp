@@ -22,10 +22,10 @@ int command_ipc;
 
 void ipc_clear(int token){
 	int tmp;
-	volatile int optimised_disable = 0;
+	//volatile int optimised_disable = 0;
 	
-	while(recv(token, &tmp, sizeof(int), MSG_DONTWAIT)>optimised_disable){
-		optimised_disable = 0;
+	while(recv(token, &tmp, sizeof(int), MSG_DONTWAIT)>0){
+		//optimised_disable = 0;
 		#ifdef DEBUG_LV_2
 			write_log("DEBUG: ipc_clear");
 		#endif
