@@ -212,7 +212,7 @@ void moscorr(){//mouse correction //MUST run after camera_init()
 	
 	sleep(1);
 	
-	turn_qr(270);
+	qr_turn(270);
 	qr_code start_qr = get_qr_angle();//current qr code angle
 	
 	int distance = 250;

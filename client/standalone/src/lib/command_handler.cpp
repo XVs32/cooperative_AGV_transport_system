@@ -13,11 +13,15 @@
 #include "motor.h"
 #include "tcp_handler.h"
 #include "command_handler.h"
+#include "command.h"
 #include "ipc_handler.h"
+#include "log.h"
 
 extern uint8_t agv_id;
 
 void* command_handler(void *){
+    
+    char msg[50];
     
     //int ipc_token = ipc_connect();
     
@@ -51,6 +55,7 @@ void* command_handler(void *){
                 mos_go(command.val);
                 break;
             case 5:
+                {
                 u_int8_t side;
                 int16_t angle;
                 u_int16_t r;
@@ -76,7 +81,9 @@ void* command_handler(void *){
                 mos_cir(side,angle,r);
                 
                 break;
+                }
             case 6:
+                {
                 u_int16_t init_angle;
                 int16_t distance;
                 
@@ -100,6 +107,7 @@ void* command_handler(void *){
                 qr_to_qr(init_angle,distance);
                 
                 break;
+                }
             default:
                 break;
         }

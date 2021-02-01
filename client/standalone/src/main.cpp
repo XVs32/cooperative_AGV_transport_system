@@ -94,7 +94,7 @@ int main (){
 	}
 	command_ipc =ipc_accept(serv_ipc);
 	
-	printf("into moscorr\n");
+	/*printf("into moscorr\n");
 	moscorr();
 	sleep(1);
 	qr_to_qr(270,500);
@@ -103,9 +103,9 @@ int main (){
 	sleep(1);
 	qr_to_qr(90,500);
 	sleep(1);
-	turn_qr(0);
+	qr_turn(0);
 	sleep(1);
-	go_cir(LEFT,250,180);
+	mos_cir(LEFT,250,180);*/
 	
 	/*
 	turn_qr(90);

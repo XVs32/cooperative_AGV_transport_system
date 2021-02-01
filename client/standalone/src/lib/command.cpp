@@ -64,15 +64,15 @@ int qr_turn(int target_angle){
         #endif
         
         if(cur_qr.y<100 || cur_qr.y>140){
-            go_mos((cur_qr.y - 120)*0.3*0.5);
+            mos_go((cur_qr.y - 120)*0.3*0.5);
         }
         
         
         if(diff > 30 || diff < -30){
-            turn_mos(30 * (diff/abs(diff)));
+            mos_turn(30 * (diff/abs(diff)));
         }
         else if(diff > 1 || diff < -1){
-            turn_mos(diff >> 1);
+            mos_turn(diff >> 1);
             usleep(200000);
         }
         else{
@@ -154,8 +154,8 @@ int mos_go(int distance){
     sprintf(msg,"Info: start go_mos distance:%d ",distance);
     write_log(msg);
     
-    motor_ctrl(LEFT, distance>>(sizeof(int)*8), 30);
-    motor_ctrl(RIGHT, distance>>(sizeof(int)*8), 30);
+    motor_ctrl(LEFT, distance>>(sizeof(int)*8-1), 30);
+    motor_ctrl(RIGHT, distance>>(sizeof(int)*8-1), 30);
     
     int mos_sum = 0;//pixel value sum
     int tem;
@@ -185,13 +185,13 @@ int qr_to_qr(u_int16_t init_angle, int distance){
     
     write_log(msg);
     
-    turn_qr(init_angle);
+    qr_turn(init_angle);
     
     qr_code cur_qr = get_qr_angle();//current qr code angle
-    turn_qr( ( (int)(init_angle - atan2( (cur_qr.x - 160) *0.3 ,distance) ) + 360) % 360);
+    qr_turn( ( (int)(init_angle - atan2( (cur_qr.x - 160) *0.3 ,distance) ) + 360) % 360);
     
     cur_qr = get_qr_angle();//current qr code angle
-    go_mos(distance + (cur_qr.y - 120) * 0.3 );
+    mos_go(distance + (cur_qr.y - 120) * 0.3 );
     
     sprintf(msg,"Info: start qr_to_qr distance:%d ",distance);
     write_log(msg);
@@ -205,7 +205,7 @@ int qr_to_qr(u_int16_t init_angle, int distance){
     
     while(1){
         
-        go_mos(30);
+        mos_go(30);
         cur_qr = get_qr_angle();//current qr code angle
         
         if(cur_qr.angle != 500){

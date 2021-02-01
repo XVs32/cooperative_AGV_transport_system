@@ -14,7 +14,7 @@
 #define COMMAND_SIZE sizeof(u_int16_t)
 
 int sockfd = 0;
-uint8_t agv_id = 999;//default, should be renew after the first contact with server
+uint8_t agv_id = 255;//default, should be renew after the first contact with server
 
 void tcp_init(){
     
@@ -45,7 +45,7 @@ void tcp_init(){
         exit(1);
     }
     
-    agv_id = command.value;
+    agv_id = command.val;
     printf("Info: The id of this agv is %d.\n",agv_id);
     
     return;

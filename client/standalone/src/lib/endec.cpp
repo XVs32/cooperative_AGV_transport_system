@@ -22,7 +22,7 @@ sensor_data sensor_data_decoder(u_int32_t data){
     sensor_data ret;
     ret.id = data >> 24;
     ret.type = (data >> 21) & 0x07;
-    ret.value = data & 0x001fffff;
+    ret.val = data & 0x001fffff;
     return ret;
 }
 
