@@ -19,8 +19,8 @@ unsigned int max_fd = 0;
 
 void* TCP_accept_adapter(void *input){
     TCP_adapter_arg *tcp_info = (TCP_adapter_arg*)input;
-    TCP_accept(tcp_info->sockfd,tcp_info->max_client);
-    pthread_exit(0);
+    TCP_accept(tcp_info->sockfd,tcp_info->max_client);//endless loop
+    //pthread_exit(0);
 }
 
 void* TCP_linstener_adapter(void *input){
