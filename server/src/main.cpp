@@ -14,13 +14,16 @@ using namespace std;
 
 #include "tcp_handler.h"
 #include "endec.h"
+#include "workspace_config_reader.h"
+
 #define MAX_CLIENT 50
 
 queue<u_int32_t> tcp_lis_buf;
 
-
 int main(){
     
+    ws_n *ws_map = get_ws_config("./config/agv_workspqce.json");
+
     int sockfd = 0;
     
     TCP_adapter_arg tcp_arg;
@@ -39,3 +42,5 @@ int main(){
     
     return 0;
 }
+
+
