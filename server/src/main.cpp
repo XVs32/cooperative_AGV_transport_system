@@ -14,7 +14,7 @@ using namespace std;
 
 #include "tcp_handler.h"
 #include "endec.h"
-#include "workspace_config_reader.h"
+#include "config_manager.h"
 
 #define MAX_CLIENT 50
 

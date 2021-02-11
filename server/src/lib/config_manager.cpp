@@ -2,34 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cJSON.h"
-#include "workspace_config_reader.h"
+#include "config_manager.h"
 
 ws_n* get_ws_config(char *file_path) {//get workspace config
     
-    FILE *json_file;
-    json_file = fopen(file_path,"r");
-    if(json_file == NULL){
-        printf("Error: Read file failed\n");
-        return NULL;
-    }
-    
-    fseek(json_file, 0, SEEK_END);
-    int file_size;
-    file_size = ftell(json_file);
-    fseek(json_file, 0, SEEK_SET);
-    
-    char *str = malloc(sizeof(char)*file_size);
-    if(fread(str,sizeof(char),file_size,json_file)!=file_size){
-        printf("Error: config file size not match\n");
-        fclose(json_file);
-        return NULL;
-    }
-    fclose(json_file);
-    
-    // First, parse the whole thing
-    cJSON *root = cJSON_Parse(str);
-    free(str);//We're done with the json file itself
-    
+    cJSON *root = read_json_file(file_path);
     int checkp_count = cJSON_GetObjectItem(root, "checkp_count")->valueint;
     cJSON *checkp_map = cJSON_GetObjectItem(root, "checkp_map");
     
