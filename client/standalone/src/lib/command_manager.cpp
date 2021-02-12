@@ -12,14 +12,14 @@
 #include "mouse.h"
 #include "motor.h"
 #include "tcp_handler.h"
-#include "command_handler.h"
+#include "command_manager.h"
 #include "command.h"
 #include "ipc_handler.h"
 #include "log.h"
 
 extern uint8_t agv_id;
 
-void* command_handler(void *){
+void* command_manager(void *){
     
     char msg[50];
     
