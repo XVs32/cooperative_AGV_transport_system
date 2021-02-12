@@ -8,7 +8,7 @@ ws_n* get_ws_config(char *file_path) {//get workspace config
     
     cJSON *root = read_json_file(file_path);
     int checkp_count = cJSON_GetObjectItem(root, "checkp_count")->valueint;
-    cJSON *checkp_map = cJSON_GetObjectItem(root, "checkp_map");
+    cJSON *checkp_map = cJSON_GetObjectItem(root, "checkpoint_map");
     
     ws_n *ws_map = malloc(sizeof(ws_n*)*(checkp_count+1));
     
@@ -36,9 +36,8 @@ ws_n* get_ws_config(char *file_path) {//get workspace config
             cur_n = new_n;
         }
     }
-    // Finally remember to free the memory!
-    cJSON_Delete(root);
     
+    cJSON_Delete(root);
     
     return ws_map;
 }

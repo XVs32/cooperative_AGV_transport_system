@@ -38,7 +38,7 @@ script_manager:
 main:
 	$(CC) -O2 ./src/main.cpp $(header) \
 	-L ./bin/ \
-	-lTcpHandler -lEndec -lConfigManager -lcJSON \
+	-lTcpHandler -lEndec -lConfigManager -lScriptManager -lcJSON \
 	-lpthread \
 	-rdynamic \
 	-Wall -Wextra \

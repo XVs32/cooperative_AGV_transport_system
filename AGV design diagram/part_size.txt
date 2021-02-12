@@ -1,5 +1,0 @@
-Motor battery: 55mm*70 (+4) mm*18mm
-
-battery: 71mm*100mm*23mm
-
-mouse: 61mm*113mm*38mm

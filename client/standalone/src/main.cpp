@@ -19,7 +19,7 @@
 #include "mouse.h"
 #include "timer.h"
 #include "motor.h"
-#include "command_handler.h"
+#include "command_manager.h"
 #include "command.h"
 #include "ipc_handler.h"
 #include "log.h"
@@ -51,7 +51,7 @@ int main (){
 	pthread_t t_camera_fd;
 	pthread_t t_mos_reader_0;
 	pthread_t t_mos_reader_1;
-	pthread_t t_command_handler;
+	pthread_t t_command_manager;
 	
 	int pth = -1;
 	
@@ -87,7 +87,7 @@ int main (){
 	}
 	camera_ipc =ipc_accept(serv_ipc);
 	
-	pthread_create(&t_command_handler, NULL, command_handler, NULL);
+	pthread_create(&t_command_manager, NULL, command_manager, NULL);
 	if(pth<0){
 		printf("cannot create thread 'camera_exec', exit\n");
 		exit(1);
@@ -145,7 +145,7 @@ int main (){
 	pthread_join(t_mos_reader_1,NULL);
 	pthread_join(t_qr_reader,NULL);
 	pthread_join(t_camera_fd,NULL);
-	pthread_join(t_command_handler,NULL);
+	pthread_join(t_command_manager,NULL);
 	
 	camera_release();
 	
