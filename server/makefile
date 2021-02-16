@@ -1,6 +1,6 @@
 
 CC=g++
-opt=-O2 -c -fpermissive -Wunused-result
+opt=-O2 -c -fpermissive -Wunused-result -Wwrite-strings
 
 ar=ar rcs
 
@@ -39,7 +39,7 @@ main:
 	$(CC) -O2 ./src/main.cpp $(header) \
 	-L ./bin/ \
 	-lTcpHandler -lEndec -lConfigManager -lScriptManager -lcJSON \
-	-lpthread \
+	-lpthread -lm \
 	-rdynamic \
 	-Wall -Wextra \
 	-o $(bin_adr)/main

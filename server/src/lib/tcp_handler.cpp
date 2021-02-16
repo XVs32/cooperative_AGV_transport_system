@@ -129,39 +129,36 @@ void TCP_linstener(int *sockfd){
         sensor_data input = sensor_data_decoder(sensor_data_buf);
         
         printf("ID:%d\ttype:%d\t\n",input.id, input.type);
-        if(input.type == 0){
-            cam_data tem = cam_dcode(input.value);
-            printf("ID:%d\tangle:%d\t\n\n",tem.id, tem.angle);
-        }
-        else if(input.type == 1){
-            mouse_data tem = mouse_dcode(input.value);
-            printf("x:%d\ty:%d\t\n\n",tem.x, tem.y);
-        }
         
-        /*if(input.type == 0){
-            u_int16_t agv_command = command_ecode(1,50);
-            if(send(*sockfd,&agv_command,sizeof(u_int16_t),0)<0){
-                printf("Error: Fail to send data. exit.");
-                exit(0);
-            }
-            agv_command = command_ecode(3,50);
-            if(send(*sockfd,&agv_command,sizeof(u_int16_t),0)<0){
-                printf("Error: Fail to send data. exit.");
-                exit(0);
-            }
+        switch(input.type){
+            case 0:
+                {
+                    cam_data tem = cam_dcode(input.val);
+                    printf("ID:%d\tangle:%d\t\n\n",tem.id, tem.angle);
+                }
+                break;
+            case 1:
+                {
+                    mouse_data tem = mouse_dcode(input.val);
+                    printf("x:%d\ty:%d\t\n\n",tem.x, tem.y);
+                }
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+            case 7:
+                if(input.val == 0x001fffff){//ack signal
+                    //send next command
+                }
+                break;
         }
-        else{
-            u_int16_t agv_command = command_ecode(1,0);
-            if(send(*sockfd,&agv_command,sizeof(u_int16_t),0)<0){
-                printf("Error: Fail to send data. exit.");
-                exit(0);
-            }
-            agv_command = command_ecode(3,0);
-            if(send(*sockfd,&agv_command,sizeof(u_int16_t),0)<0){
-                printf("Error: Fail to send data. exit.");
-                exit(0);
-            }
-        }*/
         
     }
     return; 

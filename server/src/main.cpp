@@ -23,20 +23,25 @@ queue<u_int32_t> tcp_lis_buf;
 
 int main(){
     
-    ws_n *ws_map = get_ws_config("./config/agv_workspace.json");
+    ws_n **ws_map = get_ws_config(WS_CONFIG);
     printf("get ws\n");
-    int agv_count = get_team_size("./config/agv_setting.json");
-    printf("size:%d\n",agv_count);
-
-    int path_count = get_path_size("./config/agv_setting.json", 1);
-    printf("size:%d\n",path_count);
+    int agv_team_count = get_team_count(AGV_CONFIG);
+    printf("agv_team_count:%d\n",agv_team_count);
+    int agv_count = get_agv_count(AGV_CONFIG,1);
+    printf("agv_count:%d\n",agv_count);
+    int path_count = get_path_size(AGV_CONFIG, 1);
+    printf("path size:%d\n",path_count);
     
-    int *path = get_path("./config/agv_setting.json", 1);
+    int *path = get_path(AGV_CONFIG, 1);
     int i;
     for(i=0;i<path_count;i++){
         printf("%d\n", path[i]);
     }
 
+    int turn_count = get_turn_count(WS_CONFIG, AGV_CONFIG, 1);
+    printf("%d\n", turn_count);
+
+    get_command(1,1,WS_CONFIG, AGV_CONFIG);
     int sockfd = 0;
     
     TCP_adapter_arg tcp_arg;
