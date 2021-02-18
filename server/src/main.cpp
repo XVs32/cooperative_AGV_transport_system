@@ -42,6 +42,11 @@ int main(){
     printf("%d\n", turn_count);
 
     get_command(1,1,WS_CONFIG, AGV_CONFIG);
+    printf("\n");
+    get_command(1,2,WS_CONFIG, AGV_CONFIG);
+    printf("\n");
+    get_command(1,3,WS_CONFIG, AGV_CONFIG);
+    printf("\n");
     int sockfd = 0;
     
     TCP_adapter_arg tcp_arg;

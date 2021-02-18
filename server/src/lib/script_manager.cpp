@@ -6,6 +6,8 @@
 
 #include "script_manager.h"
 #include "config_manager.h"
+#include "endec.h"
+
 int* get_path(char *file_path, int team_id){
 
     cJSON *root = read_json_file(file_path);
@@ -88,8 +90,10 @@ int32_t get_angle_diff(int init_angle, int fin_angle){
     return diff;
 }
 
-int get_tangent_angle(int x, int y){
-    float include_angle = atan2(x,y) * (180/3.14159);
+double get_tangent_angle(int x, int y){
+    double include_angle = atan2(y, x*500) * (180/3.14159);
+    if(include_angle<0){include_angle += 360;}
+    //printf("DEBUG: include_angle = %lf\n", include_angle);
     if(include_angle < 90){
         return -include_angle;
     }
@@ -110,7 +114,7 @@ int get_tangent_angle(int x, int y){
 
 
 int cmp(const void *a, const void *b){
-    return ( *(int*)a - *(int*)b);
+    return ( *(int*)a - *(int*)b);//descending order
 }
 
 
@@ -123,7 +127,10 @@ short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_
     for(i=1;i<=agv_count;i++){
         temp_y_pos[i] = get_agv_pos(AGV_CONFIG, team_id, i).y % 500;
     }
-    qsort(temp_y_pos + 1, agv_count, sizeof(int), cmp);
+    qsort(temp_y_pos + 1, agv_count, sizeof(short), cmp);
+    //for(i=1;i<=agv_count;i++){
+        //printf("temp_y_pos[%d] = %d\n", i, temp_y_pos[i]);
+    //}
 
     short diff_y_count = 0;
     short prev = 0x7fff;
@@ -141,30 +148,52 @@ short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_
     int command_from_straight = diff_y_count * (path_size -1 );
 
     int command_from_turn = get_turn_count(WS_CONFIG, AGV_CONFIG, team_id);
-    u_int8_t is_leader = ~(this_agv.x & this_agv.y);//0 = false, not 0 = true
+    u_int8_t is_leader = !(this_agv.x | this_agv.y);//0 = false, not 0 = true
+    //printf("is_leader = %d\n", is_leader);
     if(!is_leader){command_from_turn *= 3;}
-   
-    int command_size = diff_y_count * (path_size -1 ) + command_from_turn;
-    printf("ANS: %d", command_from_straight + command_from_turn);
-    short *ret = malloc(sizeof(short)*command_size);
     
+    int command_size = diff_y_count * (path_size - 1) + command_from_turn;
+    //printf("ANS: %d\n", command_from_straight + command_from_turn);
+    short *ret = malloc(sizeof(short)*command_size);
+    int ret_id = 1;
+    
+    short *checkp_b = get_bias_angle(WS_CONFIG); //remember to free memory
     ws_n **ws_map = get_ws_config(WS_CONFIG); //remember to free memory
     int *path = get_path(AGV_CONFIG, team_id);
-    int prev_angle = get_next_node(ws_map,path[0], path[1]).angle; 
+    int prev_angle = (get_next_node(ws_map,path[0], path[1]).angle + checkp_b[path[0]]) % 360;
     for(i=0;i<path_size-1;i++){
-        int next_angle = get_next_node(ws_map, path[i], path[i+1]).angle;
+        int next_angle = (get_next_node(ws_map, path[i], path[i+1]).angle + checkp_b[path[i]]) % 360;
+
+        //printf("prev_angle = %d\nnext_angle = %d\n", prev_angle, next_angle);//debug
+
         if(prev_angle != next_angle){
             if(is_leader){
+                ret[ret_id] = command_ecode(0, QR_TURN, (next_angle - checkp_b[path[i]] + 360) % 360);
+                ret_id++;
                 printf("turn_qr(%d)\n", next_angle);
             }
             else{
                 
-                int tangent_angle = get_tangent_angle(this_agv.x, this_agv.y);
+                int tangent_angle = get_tangent_angle(this_agv.x, this_agv.y) + 0.5;
+                //get_tangent_angle return double
+                //+0.5 for rounding
+                
+                ret[ret_id] = command_ecode(0, MOS_TURN, tangent_angle);
+                ret_id++;
                 printf("mos_turn(%d)\n", tangent_angle);
                 int32_t turn_angle = get_angle_diff(prev_angle, next_angle);
-                int side = (turn_angle >> 31) & 0x01;
+                int8_t side = (turn_angle >> 31) & 0x01;
                 int r = sqrt(pow(500*this_agv.x, 2) + pow(this_agv.y, 2));
+                u_int16_t command_value = 0;
+                command_value += side << 9;
+                command_value += abs(turn_angle) & 0x01ff;
+                ret[ret_id] = command_ecode(0, MOS_CIR, command_value);
+                ret_id++;
+                ret[ret_id] = command_ecode(1, MOS_CIR, r & 0x03ff);
+                ret_id++;
                 printf("mos_cir(%d, %d, %d)\n", side, abs(turn_angle), r);
+                ret[ret_id] = command_ecode(0, MOS_TURN, -tangent_angle);
+                ret_id++;
                 printf("mos_turn(%d)\n", -tangent_angle);
             }
         }
@@ -172,10 +201,14 @@ short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_
         int j;
         for(j=1;j<=diff_y_count;j++){
             if(this_agv.y == temp_y_pos[j]){
-                printf("goto_qr(%d)\n",temp_y_pos[j-1] - temp_y_pos[j]);
+                ret[ret_id] = command_ecode(0, TO_QR, (next_angle - checkp_b[path[i]] + 360) % 360);
+                ret_id++;
+                printf("goto_qr(%d)\n",(next_angle - checkp_b[path[i]] + 360) % 360);
             }
             else{
-                printf("go_forward(%d\n)", temp_y_pos[j-1] - temp_y_pos[j]);
+                ret[ret_id] = command_ecode(0, MOS_GO, temp_y_pos[j-1] - temp_y_pos[j]);
+                ret_id++;
+                printf("go_forward(%d)\n", temp_y_pos[j-1] - temp_y_pos[j]);
             }
         }
         
@@ -183,7 +216,6 @@ short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_
     }
     
     
-
-    return NULL;
+    return ret;
 
 }

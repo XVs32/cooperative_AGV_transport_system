@@ -6,6 +6,15 @@
 #include <stdint.h>
 #endif
 
+#define SET_ID 0
+#define MOS_COS 1
+#define QR_TURN 2
+#define MOS_TURN 3
+#define MOS_GO 4
+#define MOS_CIR 5
+#define QR_TO_QR 6
+#define TO_QR 7
+
 typedef struct m_sensor_data{
     u_int8_t  id;
     u_int8_t type;
@@ -43,7 +52,7 @@ u_int32_t sensor_data_encoder(unsigned char, unsigned char, u_int32_t);
 u_int32_t cam_ecode(unsigned short, unsigned short);
 u_int32_t mouse_ecode(char, char);
 u_int32_t gyro_ecode(unsigned short);
-u_int16_t command_ecode(int, int);
+u_int16_t command_ecode(int, int, int);
 
 
 #endif

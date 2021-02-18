@@ -16,7 +16,7 @@ ws_n** get_ws_config(char *file_path) {//get workspace config
     for(i=0;i<checkp_count;i++){
         
         char prnt_id_str[6];//parent_id_string
-        sprintf(prnt_id_str,"%05d",i+1);
+        sprintf(prnt_id_str,"%05d",i+1); //checkp_id start from 1
         
         cJSON *checkp_prnt = cJSON_GetObjectItem(checkp_map, prnt_id_str);
         int j;
@@ -32,7 +32,7 @@ ws_n** get_ws_config(char *file_path) {//get workspace config
             new_n->dist = cJSON_GetObjectItem(checkp_chd,"distance")->valueint;
             new_n->next = NULL;
             if(j==0){
-                ws_map[i+1] = new_n;
+                ws_map[i+1] = new_n; //checkp_id start from 1
             }
             else{
                 cur_n->next = new_n;
@@ -46,7 +46,25 @@ ws_n** get_ws_config(char *file_path) {//get workspace config
     return ws_map;
 }
 
+short* get_bias_angle(char *file_path){
+    
+    cJSON *root = read_json_file(file_path);
+    cJSON *checkp_b = cJSON_GetObjectItem(root, "checkpoint_bias_angle");
+    int checkp_b_size = cJSON_GetArraySize(checkp_b);
+    
+    short *ret = malloc(sizeof(short)*(checkp_b_size+1));
+    
+    int i;
+    for(i=0;i<checkp_b_size;i++){
+        ret[i+1] = cJSON_GetArrayItem(checkp_b, i)->valueint; //checkp_id start from 1
+        //printf("ret[%d] = %d\n", i+1, ret[i+1]);//debug
+    }
+    return ret;
+}
+
 ws_n get_next_node(ws_n **map, int ori_p, int dest_p){
+
+    
     ws_n *cur = map[ori_p];
     while(cur != NULL){
         if(cur->id == dest_p){
@@ -74,3 +92,4 @@ char is_same_angle(ws_n **map, int ori_p, int dest_p, int cur_angle){
         return 0;
     }
 }
+

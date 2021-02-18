@@ -77,10 +77,11 @@ cam_data cam_dcode(u_int32_t data){
 }
 
 
-u_int16_t command_ecode(int op, int value){//value could be motor speed or angle, base on op code
+u_int16_t command_ecode(int pf, int op, int value){//value could be motor speed or angle, base on op code
     
     u_int16_t ret = 0;
-    ret = ret | op;
+    ret = ret | pf;
+    ret = (ret << 4) | op;
     ret = (ret << 10) | value;
     return ret;
 }
@@ -88,8 +89,8 @@ u_int16_t command_ecode(int op, int value){//value could be motor speed or angle
 command_data command_dcode(u_int16_t data){//value could be motor speed or angle, base on op code
     
     command_data ret;
-    ret.pf = (data >> 15) & 0x0001;
-    ret.op = (data >> 10) & 0x001f;
+    ret.pf = (data >> 14) & 0x0003;
+    ret.op = (data >> 10) & 0x000f;
     ret.val = ( (data << 6) >> 6 );
     
     return ret;

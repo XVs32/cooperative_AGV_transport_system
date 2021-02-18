@@ -89,7 +89,7 @@ void TCP_accept(int *sockfd, int max_client){
             if(socket_fd_list[i]==0){
                 socket_fd_list[i] = new_income_fd;
                 
-                u_int16_t agv_id_command = command_ecode(0,new_income_fd);
+                u_int16_t agv_id_command = command_ecode(0, 0,new_income_fd);
                 if(send(new_income_fd,&agv_id_command,sizeof(u_int16_t),0)<0){
                     printf("Error: Fail to send data. exit.");
                     exit(0);
