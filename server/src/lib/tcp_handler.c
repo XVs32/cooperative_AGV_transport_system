@@ -9,6 +9,8 @@
 #include <pthread.h>
 
 #include "tcp_handler.h"
+#include "config_manager.h"
+#include "script_manager.h"
 #include "endec.h"
 
 #define SENSOR_DATA_SIZE 4
@@ -17,6 +19,7 @@ unsigned int *socket_fd_list;
 u_int32_t sensor_data_buf;
 unsigned int max_fd = 0;
 
+
 void* TCP_accept_adapter(void *input){
     TCP_adapter_arg *tcp_info = (TCP_adapter_arg*)input;
     TCP_accept(tcp_info->sockfd,tcp_info->max_client);//endless loop
@@ -24,8 +27,8 @@ void* TCP_accept_adapter(void *input){
 }
 
 void* TCP_linstener_adapter(void *input){
-    int *sockfd = (int*)input;
-    TCP_linstener(sockfd);
+    id_table *id = (id_table*)input;
+    TCP_linstener(id);
     pthread_exit(0);
 }
 
@@ -76,29 +79,31 @@ void TCP_accept(int *sockfd, int max_client){
     
     struct sockaddr_in clientInfo;
     int addrlen = sizeof(clientInfo);
-    int new_income_fd = 0;
     
-    while(1){
-        printf("waiting\n");
-        new_income_fd = accept(*sockfd,(struct sockaddr*) &clientInfo,
-                                (socklen_t*)&addrlen);
-        printf("new_income_fd %d\n",new_income_fd);
-        int i;
-        
-        for(i=0;i<max_client;i++){
-            if(socket_fd_list[i]==0){
-                socket_fd_list[i] = new_income_fd;
+    int team_count = get_team_count(AGV_CONFIG);
+    int i;
+    for(i=0;i<team_count;i++){
+        int j;
+        int agv_count = get_agv_count(AGV_CONFIG, i+1);
+        for(j=0;j<agv_count;j++){
                 
-                u_int16_t agv_id_command = command_ecode(0, 0,new_income_fd);
-                if(send(new_income_fd,&agv_id_command,sizeof(u_int16_t),0)<0){
-                    printf("Error: Fail to send data. exit.");
-                    exit(0);
-                }
+            printf("waiting\n");
+            int new_income_fd = accept(*sockfd,(struct sockaddr*) &clientInfo,
+                                    (socklen_t*)&addrlen);
+            printf("new_income_fd %d\n",new_income_fd);
+            int k;
+            
+            for(k=0;k<max_client && socket_fd_list[k]==0;k++){
+                socket_fd_list[k] = new_income_fd;
+                
+                id_table *client_id = malloc(sizeof(id_table));
+                client_id->socket = socket_fd_list[k];
+                client_id->team = i + 1; //team id start from 1
+                client_id->agv = j +1; //agv id start from 1
                 
                 pthread_t t_TCP_linstener_adapter;
-                pthread_create(&t_TCP_linstener_adapter, NULL, TCP_linstener_adapter, (void*)&new_income_fd); 
+                pthread_create(&t_TCP_linstener_adapter, NULL, TCP_linstener_adapter, (void*)&client_id);
                 
-                break;
             }
             
         }
@@ -108,20 +113,23 @@ void TCP_accept(int *sockfd, int max_client){
     return;
 }
 
-void TCP_linstener(int *sockfd){
+void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
     
-    fd_set fd_read;
-    struct timeval tv;//0s and 0us
+    u_int16_t agv_id_command = command_ecode(0, 0,id->socket);
+    if(send(id->socket,&agv_id_command,sizeof(u_int16_t),0)<0){
+        printf("Error: Fail to send data. exit.");
+        exit(0);
+    }
     
-    int ret;
-    
+    short* text = get_command(id->team, id->agv, WS_CONFIG, AGV_CONFIG);
+    unsigned int pc = 0;//program counter
     while(1){
         
-        ret = recv(*sockfd, &sensor_data_buf, SENSOR_DATA_SIZE, 0);
+        int ret = recv(id->socket, &sensor_data_buf, SENSOR_DATA_SIZE, 0);
         if (ret ==-1 || ret == 0){
             // Client socket closed
-            printf("Client socket %d error.\n", *sockfd); 
-            close(*sockfd);
+            printf("Client socket %d error.\n", id->socket); 
+            close(id->socket);
             break;
             //socket_fd_list[i] = 0; //need to fix this
         }
@@ -155,16 +163,17 @@ void TCP_linstener(int *sockfd){
                 break;
             case 7:
                 if(input.val == 0x001fffff){//ack signal
+                    if(send(id->socket,&(text[pc]),sizeof(u_int16_t),0)<0){
+                        printf("Error: Fail to send data. exit.");
+                        exit(0);
+                    }
+                    pc++;
                     //send next command
                 }
                 break;
         }
         
     }
-    return; 
+    return;
 }
-
-
-
-
 

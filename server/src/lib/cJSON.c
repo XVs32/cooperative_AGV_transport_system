@@ -3109,7 +3109,7 @@ CJSON_PUBLIC(void) cJSON_free(void *object)
     global_hooks.deallocate(object);
 }
 ////////////////////////////////added by marco start////////////////////////////////
-cJSON* read_json_file(char *file_path){
+cJSON* read_json_file(const char *file_path){
 
     FILE *json_file;
     json_file = fopen(file_path, "r");

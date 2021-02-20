@@ -8,7 +8,8 @@
 #include "config_manager.h"
 #include "endec.h"
 
-int* get_path(char *file_path, int team_id){
+
+int* get_path(const char *file_path, int team_id){
 
     cJSON *root = read_json_file(file_path);
     cJSON *root_arr = cJSON_GetObjectItem(root, "agv_team");
@@ -23,7 +24,7 @@ int* get_path(char *file_path, int team_id){
     return ret;
 }
 
-agv_pos get_agv_pos(char *file_path, int team_id, int agv_id){
+agv_pos get_formation(const char *file_path, int team_id, int agv_id){
     
     cJSON *root = read_json_file(file_path);
     cJSON *root_arr = cJSON_GetObjectItem(root, "agv_team");
@@ -38,13 +39,13 @@ agv_pos get_agv_pos(char *file_path, int team_id, int agv_id){
     return ret;
 }
 
-int get_team_count(char *file_path){
+int get_team_count(const char *file_path){
     cJSON *root = read_json_file(file_path);
     cJSON *root_arr = cJSON_GetObjectItem(root, "agv_team");
     return cJSON_GetArraySize(root_arr);
 }
 
-int get_agv_count(char *file_path, int team_id){
+int get_agv_count(const char *file_path, int team_id){
     cJSON *root = read_json_file(file_path);
     cJSON *root_arr = cJSON_GetObjectItem(root, "agv_team");
     cJSON *team = cJSON_GetArrayItem(root_arr, team_id-1);// team number start from 1
@@ -53,7 +54,7 @@ int get_agv_count(char *file_path, int team_id){
 }
 
 
-int get_path_size(char *file_path, int team_id){
+int get_path_size(const char *file_path, int team_id){
     cJSON *root = read_json_file(file_path);
     cJSON *root_arr = cJSON_GetObjectItem(root, "agv_team");
     cJSON *team = cJSON_GetArrayItem(root_arr, team_id-1);// team number start from 1
@@ -61,20 +62,29 @@ int get_path_size(char *file_path, int team_id){
     return cJSON_GetArraySize(path);
 }
 
-int get_turn_count(char *ws_file_path, char *agv_file_path, int team_id){
+int get_turn_count(const char *ws_file_path, const char *agv_file_path, int team_id){
     ws_n **ws_map = get_ws_config(WS_CONFIG);
     int *path_map = get_path(AGV_CONFIG, team_id);
     int path_size = get_path_size(AGV_CONFIG, team_id);
     
     int ret = 0;
     int i;
-    int prev_angle = get_next_node(ws_map, path_map[0], path_map[1]).angle;
+    int prev_angle = get_navigation(ws_map[path_map[0]], path_map[1],BY_NODE)->angle;
+    if(prev_angle == -1){
+        printf("Error: qr code %d have no direct link to qr code %d. exit.\n", path_map[0], path_map[1]);
+        exit(1);
+    }
+
     for(i=0;i<path_size - 1;i++){
-        ws_n next_p = get_next_node(ws_map, path_map[i], path_map[i+1]);
-        if(i!=0 && prev_angle != next_p.angle){
+        ws_n *next_p = get_navigation(ws_map[path_map[i]], path_map[i+1],BY_NODE);
+        if(next_p->angle == -1){
+            printf("Error: qr code %d have no direct link to qr code %d. exit.\n", path_map[i], path_map[i+1]);
+            exit(1);
+        }
+        if(i!=0 && prev_angle != next_p->angle){
             ret++;
         }
-        prev_angle = next_p.angle;
+        prev_angle = next_p->angle;
     }
     return ret;
 }
@@ -117,15 +127,75 @@ int cmp(const void *a, const void *b){
     return ( *(int*)a - *(int*)b);//descending order
 }
 
+y_pos_tracker get_on_fly_pos(ws_n **ws_map, u_int32_t center_checkp, u_int16_t angle, short *angle_bias, u_int16_t y_bias, agv_pos target_agv){
+    
+    y_pos_tracker ret;
+    ret.id = center_checkp;
+    ret.dist = target_agv.y;
+    ws_n *tem_n;
 
-short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_path){
+    //switch to left line or right line if x pos is -1 or 1
+    int rel_angle = (angle + angle_bias[ret.id] + 180 + (target_agv.x * (-90)))  % 360;
+    if(target_agv.x != 0){
+        tem_n = get_navigation(ws_map[ret.id], rel_angle, BY_ANGLE);
+        if(tem_n == NULL){
+            printf("Error: cannot find the next node, seem like the team has exceed the workspace border, exit.\n");
+            exit(1);
+        }
+
+        ret.id = tem_n->id;
+    }
+
+    printf("check %d %d %d\n", ret.id, ret.dist, rel_angle);
+
+    if(ret.dist < 0){
+        while(ret.dist < 0){
+            tem_n = get_navigation(ws_map[ret.id],(angle + angle_bias[ret.id] + 180) % 360, BY_ANGLE);
+            if(tem_n == NULL){
+                printf("Error: cannot find the next node, seem like the team has exceed the workspace border, exit.\n");
+                exit(1);
+            }
+
+            ret.dist += tem_n->dist;
+            ret.id = tem_n->id;
+
+        }
+    }
+    else{
+        tem_n = get_navigation(ws_map[ret.id],(angle + angle_bias[ret.id]) % 360, BY_ANGLE);
+        if(tem_n == NULL){
+            printf("Error: cannot find the next node, seem like the team has exceed the workspace border, exit.\n");
+            exit(1);
+        }
+
+        while(ret.dist > tem_n->dist){
+            ret.dist -= tem_n->dist;
+            ret.id = tem_n->id;
+            tem_n = get_navigation(ws_map[ret.id],(angle + angle_bias[ret.id]) % 360, BY_ANGLE);
+            if(tem_n == NULL){
+                printf("Error: cannot find the next node, seem like the team has exceed the workspace border, exit.\n");
+                exit(1);
+            }
+        }
+    }
+    return ret;
+}
+
+
+
+
+
+
+
+
+short* get_command(int team_id, int agv_id, const char *ws_file_path, const char *task_file_path){
     
     short temp_y_pos[25];
     short agv_count = get_agv_count(AGV_CONFIG, team_id);
     int i;
     temp_y_pos[0] = 500;
     for(i=1;i<=agv_count;i++){
-        temp_y_pos[i] = get_agv_pos(AGV_CONFIG, team_id, i).y % 500;
+        temp_y_pos[i] = get_formation(AGV_CONFIG, team_id, i).y % 500;
     }
     qsort(temp_y_pos + 1, agv_count, sizeof(short), cmp);
     //for(i=1;i<=agv_count;i++){
@@ -142,7 +212,7 @@ short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_
         }
     }//First "diff_y_count +1 " in "temp_y_pos" are every y pos in this team
     
-    agv_pos this_agv = get_agv_pos(AGV_CONFIG, team_id, agv_id);
+    agv_pos this_agv = get_formation(AGV_CONFIG, team_id, agv_id);
     
     int path_size = get_path_size(AGV_CONFIG, team_id);
     int command_from_straight = diff_y_count * (path_size -1 );
@@ -160,9 +230,19 @@ short* get_command(int team_id, int agv_id, char *ws_file_path, char *task_file_
     short *checkp_b = get_bias_angle(WS_CONFIG); //remember to free memory
     ws_n **ws_map = get_ws_config(WS_CONFIG); //remember to free memory
     int *path = get_path(AGV_CONFIG, team_id);
-    int prev_angle = (get_next_node(ws_map,path[0], path[1]).angle + checkp_b[path[0]]) % 360;
+    
+    int prev_angle = (get_navigation(ws_map[path[0]], path[1],BY_NODE)->angle + checkp_b[path[0]]) % 360;
+    if(prev_angle == -1){
+        printf("Error: qr code %d have no direct link to qr code %d. exit.\n", path[0], path[1]);
+        exit(1);
+    }
+
     for(i=0;i<path_size-1;i++){
-        int next_angle = (get_next_node(ws_map, path[i], path[i+1]).angle + checkp_b[path[i]]) % 360;
+        int next_angle = (get_navigation(ws_map[path[i]], path[i+1],BY_NODE)->angle + checkp_b[path[i]]) % 360;
+        if(next_angle == -1){
+            printf("Error: qr code %d have no direct link to qr code %d. exit.\n", path[i], path[i+1]);
+            exit(1);
+        }
 
         //printf("prev_angle = %d\nnext_angle = %d\n", prev_angle, next_angle);//debug
 

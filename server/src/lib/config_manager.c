@@ -4,7 +4,7 @@
 #include "cJSON.h"
 #include "config_manager.h"
 
-ws_n** get_ws_config(char *file_path) {//get workspace config
+ws_n** get_ws_config(const char *file_path) {//get workspace config
     
     cJSON *root = read_json_file(file_path);
     int checkp_count = cJSON_GetObjectItem(root, "checkp_count")->valueint;
@@ -46,7 +46,7 @@ ws_n** get_ws_config(char *file_path) {//get workspace config
     return ws_map;
 }
 
-short* get_bias_angle(char *file_path){
+short* get_bias_angle(const char *file_path){
     
     cJSON *root = read_json_file(file_path);
     cJSON *checkp_b = cJSON_GetObjectItem(root, "checkpoint_bias_angle");
@@ -62,34 +62,26 @@ short* get_bias_angle(char *file_path){
     return ret;
 }
 
-ws_n get_next_node(ws_n **map, int ori_p, int dest_p){
-
+ws_n* get_navigation(ws_n* ori_p, int dest_info, u_int8_t mode){
     
-    ws_n *cur = map[ori_p];
-    while(cur != NULL){
-        if(cur->id == dest_p){
-            return *cur;
+    while(ori_p != NULL){
+        switch(mode){
+            case BY_NODE:
+                if(ori_p->id == dest_info){
+                    return ori_p;
+                }
+                break;
+            case BY_ANGLE:
+                if(ori_p->angle == dest_info){
+                    return ori_p;
+                }
+                break;
+            default:
+                printf("Error: Undefined get_navigation mode %d, exit.\n", mode);
+                exit(1);
         }
-        cur = cur->next;
+        ori_p = ori_p->next;
     }
-    ws_n ret_null;
-    ret_null.id = NULL;
-    ret_null.angle = NULL;
-    ret_null.dist = NULL;
-    ret_null.next = NULL;
-    return ret_null;
-}
-
-char is_same_angle(ws_n **map, int ori_p, int dest_p, int cur_angle){
-    ws_n next_n = get_next_node(map, ori_p, dest_p);
-    if(next_n.id == NULL){
-        return NULL;
-    }
-    if(cur_angle == next_n.angle){
-        return 1;
-    }
-    else{
-        return 0;
-    }
+    return NULL;
 }
 
