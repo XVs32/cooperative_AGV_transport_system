@@ -21,20 +21,22 @@ int main(){
     ws_n **ws_map = get_ws_config(WS_CONFIG);
     short *bias_angle = get_bias_angle(WS_CONFIG);
     printf("ws_map done\n");
-    agv_pos member_agv = get_formation(AGV_CONFIG, 1,2);
+    coor2d member_agv = get_formation(AGV_CONFIG, 1,2);
     printf("get_formation\n");
-    y_pos_tracker ans = get_on_fly_pos(ws_map, 25, 180, bias_angle, 0, member_agv);
+    y_pos_tracker ans = get_on_fly_pos(ws_map, 25, 135, bias_angle, 0, member_agv);
     printf("%d %d\n", ans.id, ans.dist);
 
 
 
-    /*
+    
+    printf("\n");
+    printf("\n");
     get_command(1,1,WS_CONFIG, AGV_CONFIG);
     printf("\n");
     get_command(1,2,WS_CONFIG, AGV_CONFIG);
     printf("\n");
     get_command(1,3,WS_CONFIG, AGV_CONFIG);
-    printf("\n");*/
+    printf("\n");
 
     
 
