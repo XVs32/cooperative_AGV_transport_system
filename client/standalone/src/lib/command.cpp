@@ -94,11 +94,37 @@ int qr_turn(int target_angle){
     
 }
 
+int timer_turn(int target_angle){
+    
+    char msg[50];
+    
+    motor_stop();
+    
+    if(target_angle<0){
+        motor_ctrl(LEFT, BACKWARD, 30);
+        motor_ctrl(RIGHT, FORWARD, 30);
+    }
+    else{
+        motor_ctrl(LEFT, FORWARD, 30);
+        motor_ctrl(RIGHT, BACKWARD, 30);
+    }
+    
+    usleep(100000 * abs(target_angle));
+    
+    motor_stop();
+    return 0;
+}
+
 int mos_turn(int target_angle){
     
     char msg[50];
     
     motor_stop();
+    
+    if(target_angle < 5){
+        timer_turn(target_angle);
+        return 0;
+    }
     
     mos_ordr(left_mos,TO_NULL);
     ipc_clear(mos_ipc[left_mos]);
@@ -219,12 +245,42 @@ int qr_to_qr(u_int16_t init_angle, int distance){
     return cur_qr.angle;
 }
 
+int to_qr(u_int16_t end_angle){ //u_int32_t id, u_int16_t angle, u_int16_t next_distance
+    
+    char msg[50];
+    sprintf(msg,"Info: start to_qr");
+    write_log(msg);
+    
+    motor_ctrl(LEFT, FORWARD, 30);
+    motor_ctrl(RIGHT, FORWARD, 30);
+    
+    while(1){
+        cur_qr = get_qr_angle();//current qr code angle
+        if(cur_qr.angle != 500){
+            motor_stop();
+            break;
+        }
+        
+    }
+    
+    motor_stop();
+    
+    qr_turn( ( (int)(end_angle - atan2( (cur_qr.x - 160) *0.3 ,500) ) + 360) % 360);
+    //////////////////********************************//////////////////////
+    //the 500 in atan2 here is the estimated distance between two qr code, might want to change it
+    //////////////////********************************//////////////////////
+    
+    return cur_qr.angle;
+}
+
 
 void mos_cir(u_int8_t side, u_int16_t angle, u_int16_t r){
     char msg[50];
     
     int left_distance;
     int right_distance;
+    
+    char way = (angle >> 15) & 0x01;
     
     if(side == LEFT){
         left_distance = 2*3.14 * (r-82.5) * angle/ 360;
@@ -235,8 +291,6 @@ void mos_cir(u_int8_t side, u_int16_t angle, u_int16_t r){
         
         sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
         write_log(msg);
-        
-        fd_set fds;
         
         motor_stop();
         

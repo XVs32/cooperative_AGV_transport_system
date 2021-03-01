@@ -44,7 +44,6 @@ int main (){
 	camera_init();
 	qr_init();
 	mos_init();
-	tcp_init();
 	int serv_ipc = ipc_listen();
 	
 	pthread_t t_qr_reader;
@@ -87,7 +86,9 @@ int main (){
 	}
 	camera_ipc =ipc_accept(serv_ipc);
 	
-	pthread_create(&t_command_manager, NULL, command_manager, NULL);
+    tcp_init();//agv ready to go from now on
+    
+    pthread_create(&t_command_manager, NULL, command_manager, NULL);
 	if(pth<0){
 		printf("cannot create thread 'camera_exec', exit\n");
 		exit(1);

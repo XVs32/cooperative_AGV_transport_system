@@ -18,6 +18,9 @@ int main(int argc, const char * argv[]) {
     cJSON *checkp_m = cJSON_CreateObject(); //checkpoint list
     cJSON_AddItemToObject(ws_cof, "checkpoint_map", checkp_m);
     
+    cJSON *checkp_b = cJSON_CreateArray(); //checkpoint list
+    cJSON_AddItemToObject(ws_cof, "checkpoint_bias_angle", checkp_b);
+    
     printf("Here to start setting the relationship between every checkpoints...\n");
     
     
@@ -25,15 +28,20 @@ int main(int argc, const char * argv[]) {
     for(i=0;i<count;i++){
         printf("For checkpoint #%d...\n", i+1);
         
-        
-        printf("How many checkpoints can this checkpoint(#%d) reach?\n", i+1);
-        int arr_size;
-        scanf("%d",&arr_size);
-        
         char id_str[20];
         sprintf(id_str,"%05d",i+1);
         cJSON *checkp_orig = cJSON_CreateArray(); //origin checkpoint
         cJSON_AddItemToObject(checkp_m, id_str, checkp_orig);
+        
+        int angle_bias;
+        printf("How steep is the bias angle?\n");
+        scanf("%d",&angle_bias);
+        cJSON *checkp_angle_bias = cJSON_CreateNumber(angle_bias); //checkpoint distance
+        cJSON_AddItemToObject(checkp_b, "", checkp_angle_bias);
+        
+        printf("How many checkpoints can this checkpoint(#%d) reach?\n", i+1);
+        int arr_size;
+        scanf("%d",&arr_size);
         
         printf("Which checkpoint is in range?\nWhat angle it's at?\nHow far is it?\n");
         

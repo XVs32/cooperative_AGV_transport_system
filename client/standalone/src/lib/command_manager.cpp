@@ -30,6 +30,10 @@ void* command_manager(void *){
     
     while(1){
         
+    }
+    
+    /*while(1){
+        
         recv_c(&instruction);
         command = command_dcode(instruction);
         
@@ -39,80 +43,87 @@ void* command_manager(void *){
         #endif
         
         switch(command.op){
-            case 0:
+            case 0://set_id
                 agv_id = command.val;
                 break;
-            case 1:
+            case 1://mos_cos
                 moscorr();
                 break;
-            case 2:
+            case 2://qr_turn
                 qr_turn(command.val);
                 break;
-            case 3:
+            case 3://mos_turn
                 mos_turn(command.val);
                 break;
-            case 4:
+            case 4://mos_go
                 mos_go(command.val);
                 break;
-            case 5:
+            case 5://mos_cir
                 {
-                u_int8_t side;
-                int16_t angle;
-                u_int16_t r;
-                
-                int count = 2;
-                while(1){
-                    switch(command.pf){
-                        case 0:
-                            side = ( command.val >> 9 ) & 0x01;
-                            angle = (command.val << 7) >> 7;
-                            break;
-                        case 1:
-                            r = command.val;
-                            break;
+                    u_int8_t side;
+                    int16_t angle;
+                    u_int16_t r;
+
+                    int count = 2;
+                    while(1){
+                        switch(command.pf){
+                            case 0:
+                                side = ( command.val >> 9 ) & 0x01;
+                                angle = (command.val << 7) >> 7;
+                                break;
+                            case 1:
+                                r = command.val;
+                                break;
+                        }
+
+                        if(!--count){ break; }
+
+                        recv_c(&instruction);
+                        command = command_dcode(instruction);
                     }
-                    
-                    if(!--count){ break; }
-                    
-                    recv_c(&instruction);
-                    command = command_dcode(instruction);
+
+                    mos_cir(side,angle,r);
+
+                    break;
                 }
-                
-                mos_cir(side,angle,r);
-                
-                break;
-                }
-            case 6:
+            case 6://qr_to_qr
                 {
-                u_int16_t init_angle;
-                int16_t distance;
-                
-                int count = 2;
-                while(1){
-                    switch(command.pf){
-                        case 0:
-                            init_angle = command.val;
-                            break;
-                        case 1:
-                            distance = (command.val << 6) >> 6;
-                            break;
+                    u_int16_t init_angle;
+                    int16_t distance;
+
+                    int count = 2;
+                    while(1){
+                        switch(command.pf){
+                            case 0:
+                                init_angle = command.val;
+                                break;
+                            case 1:
+                                distance = (command.val << 6) >> 6;
+                                break;
+                        }
+
+                        if(!--count){ break; }
+
+                        recv_c(&instruction);
+                        command = command_dcode(instruction);
                     }
-                    
-                    if(!--count){ break; }
-                    
-                    recv_c(&instruction);
-                    command = command_dcode(instruction);
+
+                    qr_to_qr(init_angle,distance);
+
+                    break;
                 }
-                
-                qr_to_qr(init_angle,distance);
-                
-                break;
+            case 7://to_qr
+                {
+                    
+                    break;
                 }
             default:
                 break;
         }
         
-    }
+        send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
+        
+    }*/
     
 
 }

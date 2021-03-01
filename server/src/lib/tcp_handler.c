@@ -16,7 +16,7 @@
 #define SENSOR_DATA_SIZE 4
 
 unsigned int *socket_fd_list;
-u_int32_t sensor_data_buf;
+uint32_t sensor_data_buf;
 unsigned int max_fd = 0;
 
 
@@ -115,13 +115,13 @@ void TCP_accept(int *sockfd, int max_client){
 
 void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
     
-    u_int16_t agv_id_command = command_ecode(0, 0,id->socket);
-    if(send(id->socket,&agv_id_command,sizeof(u_int16_t),0)<0){
+    uint16_t agv_id_command = command_ecode(0, 0,id->socket);
+    if(send(id->socket,&agv_id_command,sizeof(uint16_t),0)<0){
         printf("Error: Fail to send data. exit.");
         exit(0);
     }
     
-    short* text = get_command(id->team, id->agv, WS_CONFIG, AGV_CONFIG);
+    uint16_node *text = get_command(id->team, id->agv, WS_CONFIG, AGV_CONFIG);
     unsigned int pc = 0;//program counter
     while(1){
         
@@ -163,11 +163,16 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
                 break;
             case 7:
                 if(input.val == 0x001fffff){//ack signal
-                    if(send(id->socket,&(text[pc]),sizeof(u_int16_t),0)<0){
+                    if(send(id->socket,&(text->val),sizeof(uint16_t),0)<0){
                         printf("Error: Fail to send data. exit.");
                         exit(0);
                     }
-                    pc++;
+                    if(text != NULL){
+                        text = text->next;
+                    }
+                    if(text == NULL){
+                        printf("ALL command done for %d agv\n", id->socket);
+                    }
                     //send next command
                 }
                 break;

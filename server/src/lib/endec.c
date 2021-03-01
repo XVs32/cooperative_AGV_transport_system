@@ -4,9 +4,9 @@
 
 #include "endec.h"
 
-u_int32_t sensor_data_encoder(unsigned char id, unsigned char type, u_int32_t value){
+uint32_t sensor_data_encoder(unsigned char id, unsigned char type, uint32_t value){
     
-    u_int32_t ret = 0;
+    uint32_t ret = 0;
     ret = ret | id;
     
     type = type & 0x07;
@@ -18,7 +18,7 @@ u_int32_t sensor_data_encoder(unsigned char id, unsigned char type, u_int32_t va
     return ret;
 }
 
-sensor_data sensor_data_decoder(u_int32_t data){
+sensor_data sensor_data_decoder(uint32_t data){
     sensor_data ret;
     ret.id = data >> 24;
     ret.type = (data >> 21) & 0x07;
@@ -27,16 +27,16 @@ sensor_data sensor_data_decoder(u_int32_t data){
 }
 
 
-u_int32_t mouse_ecode(char x,char y){
+uint32_t mouse_ecode(char x,char y){
     
-    u_int32_t ret = 0;
+    uint32_t ret = 0;
     ret = ret | x;
     ret = (ret << 8) | y;
     
     return ret;
 }
 
-mouse_data mouse_dcode(u_int32_t data){
+mouse_data mouse_dcode(uint32_t data){
     mouse_data ret;
     ret.x = (data >> 8) & 0x000000ff;
     ret.y = data & 0x000000ff;
@@ -44,23 +44,23 @@ mouse_data mouse_dcode(u_int32_t data){
 }
 
 
-u_int32_t gyro_ecode(unsigned short angle){
+uint32_t gyro_ecode(unsigned short angle){
     
-    u_int32_t ret = 0;
+    uint32_t ret = 0;
     
     return ret | angle;
 }
 
-gyro_data gyro_dcode(u_int32_t data){
+gyro_data gyro_dcode(uint32_t data){
     gyro_data ret;
     ret.angle = data & 0x0000ffff;
     return ret;
 }
 
 
-u_int32_t cam_ecode(unsigned short id, unsigned short angle){
+uint32_t cam_ecode(unsigned short id, unsigned short angle){
     
-    u_int32_t ret = 0;
+    uint32_t ret = 0;
     ret = ret | id;
     
     angle = angle & 0x01ff;
@@ -69,7 +69,7 @@ u_int32_t cam_ecode(unsigned short id, unsigned short angle){
     return ret;
 }
 
-cam_data cam_dcode(u_int32_t data){
+cam_data cam_dcode(uint32_t data){
     cam_data ret;
     ret.id = data >> 9;
     ret.angle = data & 0x000001ff;
@@ -77,16 +77,16 @@ cam_data cam_dcode(u_int32_t data){
 }
 
 
-u_int16_t command_ecode(int pf, int op, int value){//value could be motor speed or angle, base on op code
+uint16_t command_ecode(int pf, int op, int value){//value could be motor speed or angle, base on op code
     
-    u_int16_t ret = 0;
+    uint16_t ret = 0;
     ret = ret | pf;
     ret = (ret << 4) | op;
     ret = (ret << 10) | value;
     return ret;
 }
 
-command_data command_dcode(u_int16_t data){//value could be motor speed or angle, base on op code
+command_data command_dcode(uint16_t data){//value could be motor speed or angle, base on op code
     
     command_data ret;
     ret.pf = (data >> 14) & 0x0003;

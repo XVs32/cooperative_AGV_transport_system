@@ -8,7 +8,7 @@ header=-I /usr/local/include/ -I ./src/lib/
 lib_adr=./src/lib
 bin_adr=./bin
 
-all: clean tcp_handler endec cJSON config_manager script_manager main
+all: clean tcp_handler endec cJSON config_manager script_manager linklist main
 
 tcp_handler:
 	$(CC) $(opt) $(lib_adr)/tcp_handler.c $(header) -o $(bin_adr)/tcp_handler.o
@@ -35,10 +35,15 @@ script_manager:
 	$(ar) $(bin_adr)/libScriptManager.a $(bin_adr)/script_manager.o
 	rm $(bin_adr)/script_manager.o
 
+linklist:
+	$(CC) $(opt) $(lib_adr)/linklist.c $(header) -o $(bin_adr)/linklist.o
+	$(ar) $(bin_adr)/libLinklist.a $(bin_adr)/linklist.o
+	rm $(bin_adr)/linklist.o
+
 main:
 	$(CC) -O2 ./src/main.c $(header) \
 	-L ./bin/ \
-	-lTcpHandler -lEndec -lScriptManager -lConfigManager -lcJSON \
+	-lTcpHandler -lEndec -lScriptManager -lConfigManager -lLinklist -lcJSON \
 	-lpthread -lm \
 	-rdynamic \
 	-Wall -Wextra \

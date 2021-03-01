@@ -35,7 +35,9 @@ void tcp_init(){
         exit(1);
     }
     
-    u_int16_t command_buf;
+    send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
+    
+    /*u_int16_t command_buf;
     command_data command;
     recv_c(&command_buf);
     command = command_dcode(command_buf);
@@ -46,7 +48,7 @@ void tcp_init(){
     }
     
     agv_id = command.val;
-    printf("Info: The id of this agv is %d.\n",agv_id);
+    printf("Info: The id of this agv is %d.\n",agv_id);*/
     
     return;
 }
