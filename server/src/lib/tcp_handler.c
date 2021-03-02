@@ -93,17 +93,23 @@ void TCP_accept(int *sockfd, int max_client){
             printf("new_income_fd %d\n",new_income_fd);
             int k;
             
-            for(k=0;k<max_client && socket_fd_list[k]==0;k++){
-                socket_fd_list[k] = new_income_fd;
-                
-                id_table *client_id = malloc(sizeof(id_table));
-                client_id->socket = socket_fd_list[k];
-                client_id->team = i + 1; //team id start from 1
-                client_id->agv = j +1; //agv id start from 1
-                
-                pthread_t t_TCP_linstener_adapter;
-                pthread_create(&t_TCP_linstener_adapter, NULL, TCP_linstener_adapter, (void*)&client_id);
-                
+            for(k=0;k<max_client;k++){
+                if( socket_fd_list[k]==0){
+                    socket_fd_list[k] = new_income_fd;
+
+                    id_table *client_id = malloc(sizeof(id_table));
+                    client_id->socket = socket_fd_list[k];
+                    client_id->team = i + 1; //team id start from 1
+                    client_id->agv = j +1; //agv id start from 1
+
+                    pthread_t t_TCP_linstener_adapter;
+                    pthread_create(&t_TCP_linstener_adapter, NULL, TCP_linstener_adapter, (void*)client_id);
+                    break;
+                }
+            }
+            if(k == max_client){
+                printf("The server cannot accept any more connection.\n");
+                exit(0);
             }
             
         }
@@ -117,10 +123,10 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
     
     uint16_t agv_id_command = command_ecode(0, 0,id->socket);
     if(send(id->socket,&agv_id_command,sizeof(uint16_t),0)<0){
-        printf("Error: Fail to send data. exit.");
+        printf("Error: Fail to send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, agv_id_command);
         exit(0);
     }
-    
+    printf("\nin TCP_linstener\n\n"); 
     uint16_node *text = get_command(id->team, id->agv, WS_CONFIG, AGV_CONFIG);
     unsigned int pc = 0;//program counter
     while(1){
@@ -163,8 +169,9 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
                 break;
             case 7:
                 if(input.val == 0x001fffff){//ack signal
+                    printf("Debug: send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
                     if(send(id->socket,&(text->val),sizeof(uint16_t),0)<0){
-                        printf("Error: Fail to send data. exit.");
+                        printf("Error: Fail to send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
                         exit(0);
                     }
                     if(text != NULL){
@@ -172,8 +179,9 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
                     }
                     if(text == NULL){
                         printf("ALL command done for %d agv\n", id->socket);
+                        //end this process
+                        pthread_exit(0);
                     }
-                    //send next command
                 }
                 break;
         }

@@ -31,8 +31,17 @@ int main(){
     
     printf("\n");
     printf("\n");
-    get_command(1,1,WS_CONFIG, AGV_CONFIG);
-    printf("done\n");
+    uint16_node *command = get_command(1,1,WS_CONFIG, AGV_CONFIG);
+    
+    //u_int16_add_to_ll(command, 5, TO_TAIL);
+    
+    printf("command address: %u\n", command);
+    while(command!=NULL){
+        printf("command: %x\n", command->val);
+        command = command->next;
+    }
+    
+    /*printf("done\n");
     get_command(1,2,WS_CONFIG, AGV_CONFIG);
     printf("done\n");
     get_command(1,3,WS_CONFIG, AGV_CONFIG);
@@ -40,7 +49,7 @@ int main(){
     get_command(1,4,WS_CONFIG, AGV_CONFIG);
     printf("done\n");
     get_command(1,5,WS_CONFIG, AGV_CONFIG);
-    printf("done\n");
+    printf("done\n");*/
 
     
 
@@ -52,7 +61,7 @@ int main(){
     
     TCP_server_init(&sockfd,MAX_CLIENT);
     
-    printf("finish init\n");
+    printf("finish init\n\n\n\n\n");
     
     pthread_t t1;
     pthread_create(&t1, NULL, TCP_accept_adapter, (void*)&tcp_arg); 

@@ -75,7 +75,7 @@ void int32_add_to_ll(int32_node *head, int32_node *target, int mode){
     return;
 }
 
-void u_int16_add_to_ll(uint16_node *head, uint16_node *target, int mode){
+uint16_node* u_int16_add_to_ll(uint16_node *head, uint16_node *target, int mode){
     
     uint16_node *cur = head;
     uint16_node *prev = head;
@@ -145,6 +145,6 @@ void u_int16_add_to_ll(uint16_node *head, uint16_node *target, int mode){
             printf("Error: undefined u_int16_add_to_ll mode %d, exit.\n", mode);
             exit(1);
     }
-    return;
+    return head;
 }
 

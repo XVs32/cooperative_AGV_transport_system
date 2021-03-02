@@ -19,6 +19,6 @@ typedef struct t_u_short_node{
 }uint16_node;
 
 void int32_add_to_ll(int32_node *head, int32_node *target, int mode);
-void u_int16_add_to_ll(uint16_node *head, uint16_node *target, int mode);
+uint16_node* u_int16_add_to_ll(uint16_node *head, uint16_node *target, int mode);
 
 #endif
