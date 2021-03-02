@@ -51,7 +51,7 @@ extern int parel[365][2];
 extern int mos_sum[2];//pixel value sum
 
 
-u_int16_t get_angle(qr_code *);
+uint16_t get_angle(qr_code *);
 short valid_qr_id(const uint8_t *);
 
 void qr_ordr(int input){//qr_code result Output ReDiRect

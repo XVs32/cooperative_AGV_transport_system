@@ -13,7 +13,7 @@ ifdef DEBUG
 	opt=-O2 -D DEBUG -c
 endif
 
-all: clean log ipc_handler tcp_handler timerfd camera qr_code mouse endec motor command_handler command main
+all: clean log ipc_handler tcp_handler timerfd camera qr_code mouse endec motor command_manager command main
 
 log:
 	$(CC) $(opt) $(lib_adr)/log.c $(header) -o $(bin_adr)/log.o
@@ -37,8 +37,8 @@ camera:
 
 qr_code:
 	$(CC) $(opt) $(lib_adr)/qr_reader.c $(header) \
-	-I ./src/include/quirc/demo \
-	-I ./src/include/quirc/lib \
+	-I ./src/lib/quirc/demo \
+	-I ./src/lib/quirc/lib \
 	-I /usr/include/SDL \
 	-o $(bin_adr)/qr_reader.o
 	$(ar) $(bin_adr)/libQrReader.a $(bin_adr)/qr_reader.o
@@ -51,9 +51,9 @@ endec:
 	$(CC) $(opt) $(lib_adr)/endec.c $(header) -o $(bin_adr)/endec.o
 	$(ar) $(bin_adr)/libEndec.a $(bin_adr)/endec.o
 	
-command_handler:
-	$(CC) $(opt) $(lib_adr)/command_handler.c $(header) -o $(bin_adr)/command_handler.o
-	$(ar) $(bin_adr)/libCommandHandler.a $(bin_adr)/command_handler.o
+command_manager:
+	$(CC) $(opt) $(lib_adr)/command_manager.c $(header) -o $(bin_adr)/command_manager.o
+	$(ar) $(bin_adr)/libCommandManager.a $(bin_adr)/command_manager.o
 
 motor:
 	$(CC) $(opt) $(lib_adr)/motor.c $(header) -o $(bin_adr)/motor.o
@@ -64,14 +64,14 @@ command:
 	-I ./src/include/ZXing/core/src \
 	-I ./src/include/ZXing/thirdparty/stb/ \
 	-o $(bin_adr)/command.o
-	$(ar) $(bin_adr)/libMouseCorrection.a $(bin_adr)/command.o
+	$(ar) $(bin_adr)/libCommand.a $(bin_adr)/command.o
 
 main:
 	$(CC) -O3 ./src/main.c $(header) \
 	-L ./bin/ \
 	-L /opt/vc/lib/ \
 	-L ./src/lib/ZXing/ZXingCore \
-	-lCommandHandler -lMouseCorrection -lMotor -lCamera -lQrReader -lMouse -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc \
+	-lCommandManager -lMotor -lCamera -lQrReader -lMouse -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc -lCommand \
 	-lZXingCore -lopencv_core -lraspicam -lraspicam_cv -lmmal_core -lmmal_util -lmmal \
 	-lopencv_imgproc -lopencv_imgcodecs -lpthread -lwiringPi -lm \
 	-rdynamic \

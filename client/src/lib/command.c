@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "ipc_handler.h"
 #include "log.h"
+#include "angle.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -205,7 +206,7 @@ int mos_go(int distance){
     return 0;
 }
 
-int qr_to_qr(u_int16_t init_angle, int distance){
+int qr_to_qr(uint16_t init_angle, int distance){
     
     char msg[50];
     
@@ -245,7 +246,7 @@ int qr_to_qr(u_int16_t init_angle, int distance){
     return cur_qr.angle;
 }
 
-int to_qr(u_int16_t end_angle){ //u_int32_t id, u_int16_t angle, u_int16_t next_distance
+int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
     
     char msg[50];
     sprintf(msg,"Info: start to_qr");
@@ -253,10 +254,12 @@ int to_qr(u_int16_t end_angle){ //u_int32_t id, u_int16_t angle, u_int16_t next_
     
     motor_ctrl(LEFT, FORWARD, 30);
     motor_ctrl(RIGHT, FORWARD, 30);
+
+    qr_code cur_qr;
     
     while(1){
         cur_qr = get_qr_angle();//current qr code angle
-        if(cur_qr.angle != 500){
+        if(cur_qr.angle != 500 && cur_qr.id == id){
             motor_stop();
             break;
         }
@@ -265,16 +268,13 @@ int to_qr(u_int16_t end_angle){ //u_int32_t id, u_int16_t angle, u_int16_t next_
     
     motor_stop();
     
-    qr_turn( ( (int)(end_angle - atan2( (cur_qr.x - 160) *0.3 ,500) ) + 360) % 360);
-    //////////////////********************************//////////////////////
-    //the 500 in atan2 here is the estimated distance between two qr code, might want to change it
-    //////////////////********************************//////////////////////
+    qr_turn(ANGLE_MINUS(end_angle ,(int)(atan2( (cur_qr.x - 160) *0.3 ,next_distance) * (180/3.1416))));
     
     return cur_qr.angle;
 }
 
 
-void mos_cir(u_int8_t side, u_int16_t angle, u_int16_t r){
+void mos_cir(uint8_t side, uint16_t angle, uint16_t r){
     char msg[50];
     
     int left_distance;

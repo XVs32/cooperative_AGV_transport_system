@@ -35,7 +35,7 @@ void tcp_init(){
         exit(1);
     }
     
-    send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
+    //send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
     
     /*u_int16_t command_buf;
     command_data command;
@@ -64,6 +64,10 @@ void recv_c(u_int16_t *buf){ //receive command
     if(recv(sockfd, buf, COMMAND_SIZE, 0)<0){
         printf("Error: Fail to receive command, keep going.");
     }
+    #ifdef DEBUG
+        sprintf(msg,"Debug: command in: pf:%d op:%d value:%d",command.pf, command.op, command.val);
+        write_log(msg);
+    #endif
     return;
 }
 

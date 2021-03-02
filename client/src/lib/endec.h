@@ -7,14 +7,14 @@
 #endif
 
 typedef struct m_sensor_data{
-    u_int8_t  id;
-    u_int8_t type;
-    u_int32_t val;
+    uint8_t  id;
+    uint8_t type;
+    uint32_t val;
 }sensor_data;
 
 typedef struct m_cam_data{
-    u_int16_t id;
-    u_int16_t angle;
+    uint16_t id;
+    uint16_t angle;
 }cam_data;
 
 typedef struct m_mouse_data{
@@ -23,27 +23,27 @@ typedef struct m_mouse_data{
 }mouse_data;
 
 typedef struct m_gyro_data{
-    u_int16_t angle;
+    uint16_t angle;
 }gyro_data;
 
 typedef struct m_command_data{
-    u_int8_t pf; //prefix
-    u_int16_t op;
-    u_int16_t val;
+    uint8_t pf; //prefix
+    uint16_t op;
+    uint16_t val;
 }command_data;
 
 
-sensor_data sensor_data_decoder(u_int32_t);
-cam_data cam_dcode(u_int32_t);
-mouse_data mouse_dcode(u_int32_t);
-gyro_data gyro_dcode(u_int32_t);
-command_data command_dcode(u_int16_t);
+sensor_data sensor_data_decoder(uint32_t);
+cam_data cam_dcode(uint32_t);
+mouse_data mouse_dcode(uint32_t);
+gyro_data gyro_dcode(uint32_t);
+command_data command_dcode(uint16_t);
 
-u_int32_t sensor_data_encoder(unsigned char, unsigned char, u_int32_t);
-u_int32_t cam_ecode(unsigned short, unsigned short);
-u_int32_t mouse_ecode(char, char);
-u_int32_t gyro_ecode(unsigned short);
-u_int16_t command_ecode(int, int);
+uint32_t sensor_data_encoder(unsigned char, unsigned char, uint32_t);
+uint32_t cam_ecode(unsigned short, unsigned short);
+uint32_t mouse_ecode(char, char);
+uint32_t gyro_ecode(unsigned short);
+uint16_t command_ecode(int, int);
 
 
 #endif
