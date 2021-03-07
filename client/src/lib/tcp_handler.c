@@ -9,6 +9,7 @@
 #include <arpa/inet.h> 
 
 #include "endec.h"
+#include "log.h"
 #include "tcp_handler.h"
 
 #define COMMAND_SIZE sizeof(u_int16_t)
@@ -64,8 +65,10 @@ void recv_c(u_int16_t *buf){ //receive command
     if(recv(sockfd, buf, COMMAND_SIZE, 0)<0){
         printf("Error: Fail to receive command, keep going.");
     }
+    
+    char msg[50];
     #ifdef DEBUG
-        sprintf(msg,"Debug: command in: pf:%d op:%d value:%d",command.pf, command.op, command.val);
+        sprintf(msg,"Debug: recv command 0x%X",*buf);
         write_log(msg);
     #endif
     return;

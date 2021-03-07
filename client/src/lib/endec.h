@@ -43,7 +43,7 @@ uint32_t sensor_data_encoder(unsigned char, unsigned char, uint32_t);
 uint32_t cam_ecode(unsigned short, unsigned short);
 uint32_t mouse_ecode(char, char);
 uint32_t gyro_ecode(unsigned short);
-uint16_t command_ecode(int, int);
+uint16_t command_ecode(int, int, int);
 
 
 #endif

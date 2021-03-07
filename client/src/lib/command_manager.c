@@ -47,11 +47,21 @@ void* command_manager(void *){
                 printf("qr_turn %d\n",command.val);
                 break;
             case 3://mos_turn
-                printf("mos_turn %d\n",command.val);
-                break;
+                {
+                    int16_t angle = (int16_t)command.val;
+                    angle = (angle << 6) >> 6; //sign-extention
+                    //mos_turn(angle);
+                    printf("mos_turn %d\n",angle);
+                    break;
+                }
             case 4://mos_go
-                printf("mos_go %d\n",command.val);
-                break;
+                {
+                    int16_t distance = (int16_t)command.val;
+                    distance = (distance << 6) >> 6; //sign-extention
+                    //mos_go(distance);
+                    printf("mos_go %d\n",distance);
+                    break;
+                }
             case 5://mos_cir
                 {
                     uint8_t side;
@@ -63,7 +73,8 @@ void* command_manager(void *){
                         switch(command.pf){
                             case 0:
                                 side = ( command.val >> 9 ) & 0x01;
-                                angle = (command.val << 7) >> 7;
+                                angle = (int16_t)command.val;
+                                angle = (angle << 7) >> 7; //sign-extention, angle is -180~+180 here, not +-360
                                 break;
                             case 1:
                                 r = command.val;
@@ -118,20 +129,24 @@ void* command_manager(void *){
                     while(1){
                         switch(command.pf){
                             case 0:
-                                id = id + ((command.val << 8) & 0x03ff);
+                                id += (command.val << 8);
                                 break;
                             case 1:
-                                id += (command.val & 0x03ff);
+                                id += command.val;
                                 break;
                             case 2:
-                                end_angle = command.val & 0x03ff;
+                                end_angle = command.val;
                                 break;
                             case 3:
-                                next_distance = command.val & 0x03ff;
+                                next_distance = command.val;
                                 break;
                         }
                         
-                        printf("debug: to_qr %d %d %d\n", id, end_angle, next_distance);
+
+                        #ifdef DEBUG
+                            sprintf(msg,"Debug: to_qr %d %d %d\n", id, end_angle, next_distance);
+                            write_log(msg);
+                        #endif
 
                         if(!--count){break;}
                         
