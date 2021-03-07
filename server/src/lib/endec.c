@@ -81,8 +81,8 @@ uint16_t command_ecode(int pf, int op, int value){//value could be motor speed o
     
     uint16_t ret = 0;
     ret = ret | pf;
-    ret = (ret << 4) | op;
-    ret = (ret << 10) | value;
+    ret = (ret << 4) | (op & 0x0f);
+    ret = (ret << 10) | (value & 0x03ff);
     return ret;
 }
 
@@ -91,7 +91,7 @@ command_data command_dcode(uint16_t data){//value could be motor speed or angle,
     command_data ret;
     ret.pf = (data >> 14) & 0x0003;
     ret.op = (data >> 10) & 0x000f;
-    ret.val = ( (data << 6) >> 6 );
+    ret.val = data & 0x03ff;
     
     return ret;
 }
