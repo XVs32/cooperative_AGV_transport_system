@@ -38,28 +38,32 @@ void* command_manager(void *){
         
         switch(command.op){
             case 0://set_id
-                printf("set id\n");
+                agv_id = command.val;
+                //printf("set id\n");
                 break;
             case 1://mos_cos
-                printf("moscor\n");
+                moscorr();
+                //printf("moscor\n");
                 break;
             case 2://qr_turn
-                printf("qr_turn %d\n",command.val);
+                qr_turn(command.val);
+                //printf("qr_turn %d\n",command.val);
                 break;
             case 3://mos_turn
                 {
                     int16_t angle = (int16_t)command.val;
-                    angle = (angle << 6) >> 6; //sign-extention
-                    //mos_turn(angle);
-                    printf("mos_turn %d\n",angle);
+                    angle = angle << 6;//sign-extention
+                    angle = angle >> 6;//sign-extention
+                    mos_turn(angle);
+                    //printf("mos_turn %d\n",angle);
                     break;
                 }
             case 4://mos_go
                 {
                     int16_t distance = (int16_t)command.val;
                     distance = (distance << 6) >> 6; //sign-extention
-                    //mos_go(distance);
-                    printf("mos_go %d\n",distance);
+                    mos_go(distance);
+                    //printf("mos_go %d\n",distance);
                     break;
                 }
             case 5://mos_cir
@@ -74,7 +78,8 @@ void* command_manager(void *){
                             case 0:
                                 side = ( command.val >> 9 ) & 0x01;
                                 angle = (int16_t)command.val;
-                                angle = (angle << 7) >> 7; //sign-extention, angle is -180~+180 here, not +-360
+                                angle = angle << 7; //sign-extention, angle is -180~+180 here, not +-360
+                                angle = angle >> 7; //sign-extention, angle is -180~+180 here, not +-360
                                 break;
                             case 1:
                                 r = command.val;
@@ -87,9 +92,10 @@ void* command_manager(void *){
                         recv_c(&instruction);
                         command = command_dcode(instruction);
                     }
-
-                    printf("mos_cir %d %d %d\n", side, angle, r);
-
+                    
+                    mos_cir(side,angle,r);
+                    //printf("mos_cir %d %d %d\n", side, angle, r);
+                    
                     break;
                 }
             case 6://qr_to_qr
@@ -114,8 +120,9 @@ void* command_manager(void *){
                         recv_c(&instruction);
                         command = command_dcode(instruction);
                     }
-
-                    printf("qr_to_qr %d %d\n", init_angle, distance);
+                    
+                    qr_to_qr(init_angle,distance);
+                    //printf("qr_to_qr %d %d\n", init_angle, distance);
 
                     break;
                 }
@@ -154,9 +161,10 @@ void* command_manager(void *){
                         recv_c(&instruction);
                         command = command_dcode(instruction);
                     }
-
-                    printf("to_qr %d %d %d\n", id, end_angle, next_distance);
-
+                    
+                    to_qr(id, end_angle, next_distance);
+                    //printf("to_qr %d %d %d\n", id, end_angle, next_distance);
+                    
                     break;
                 }
             default:

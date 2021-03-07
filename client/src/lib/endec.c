@@ -78,10 +78,11 @@ cam_data cam_dcode(uint32_t data){
 
 
 uint16_t command_ecode(int pf, int op, int value){//value could be motor speed or angle, base on op code
+    
     uint16_t ret = 0;
     ret = ret | pf;
     ret = (ret << 4) | (op & 0x0f);
-    ret = (ret << 10) | (value & 0x02ff);
+    ret = (ret << 10) | (value & 0x03ff);
     return ret;
 }
 

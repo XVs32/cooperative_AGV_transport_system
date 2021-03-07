@@ -6,9 +6,18 @@
 #include <stdint.h>
 #endif
 
+#define SET_ID 0
+#define MOS_COS 1
+#define QR_TURN 2
+#define MOS_TURN 3
+#define MOS_GO 4
+#define MOS_CIR 5
+#define QR_TO_QR 6
+#define TO_QR 7
+
 typedef struct m_sensor_data{
-    uint8_t  id;
-    uint8_t type;
+    u_int8_t  id;
+    u_int8_t type;
     uint32_t val;
 }sensor_data;
 
@@ -27,7 +36,7 @@ typedef struct m_gyro_data{
 }gyro_data;
 
 typedef struct m_command_data{
-    uint8_t pf; //prefix
+    u_int8_t pf; //prefix
     uint16_t op;
     uint16_t val;
 }command_data;
