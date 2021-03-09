@@ -116,6 +116,8 @@ void TCP_accept(int *sockfd, int max_client){
         
     }
     
+    while(1){};
+    
     return;
 }
 
@@ -169,7 +171,7 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
                 break;
             case 7:
                 if(input.val == 0x001fffff){//ack signal
-                    //printf("Debug: send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
+                    printf("Debug: send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
                     if(send(id->socket,&(text->val),sizeof(uint16_t),0)<0){
                         printf("Error: Fail to send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
                         exit(0);
