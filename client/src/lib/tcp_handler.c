@@ -36,34 +36,20 @@ void tcp_init(){
         exit(1);
     }
     
-    //send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
-    
-    /*u_int16_t command_buf;
-    command_data command;
-    recv_c(&command_buf);
-    command = command_dcode(command_buf);
-    
-    if(command.op != 0){
-        printf("Error: lack of agv id, cannot receive any command, exit.\n");
-        exit(1);
-    }
-    
-    agv_id = command.val;
-    printf("Info: The id of this agv is %d.\n",agv_id);*/
-    
     return;
 }
 
 void send_s(u_int32_t data){ //send sensor data
     if(send(sockfd,&data,sizeof(u_int32_t),0)<0){
         printf("Error: Fail to send sensor data, keep going.");
+        printf(" Where sockfd = %d, data = %d\n", sockfd, data);
     }
     return;
 }
 
 void recv_c(u_int16_t *buf){ //receive command
     if(recv(sockfd, buf, COMMAND_SIZE, 0)<0){
-        printf("Error: Fail to receive command, keep going.");
+        printf("Error: Fail to receive command, keep going.\n");
     }
     
     char msg[50];

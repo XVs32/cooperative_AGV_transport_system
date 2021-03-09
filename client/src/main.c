@@ -86,7 +86,13 @@ int main (){
 	}
 	camera_ipc =ipc_accept(serv_ipc);
 	
+	moscorr();
+	sleep(1);
+	qr_turn(270);
+	sleep(1);
+	
     tcp_init();//agv ready to go from now on
+	printf("agv ready to go from now on\n");
     
     pthread_create(&t_command_manager, NULL, command_manager, NULL);
 	if(pth<0){

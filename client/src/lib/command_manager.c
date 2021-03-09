@@ -39,15 +39,15 @@ void* command_manager(void *){
         switch(command.op){
             case 0://set_id
                 agv_id = command.val;
-                //printf("set id\n");
+                printf("set id\n");
                 break;
             case 1://mos_cos
                 moscorr();
-                //printf("moscor\n");
+                printf("moscor\n");
                 break;
             case 2://qr_turn
                 qr_turn(command.val);
-                //printf("qr_turn %d\n",command.val);
+                printf("qr_turn %d\n",command.val);
                 break;
             case 3://mos_turn
                 {
@@ -55,7 +55,7 @@ void* command_manager(void *){
                     angle = angle << 6;//sign-extention
                     angle = angle >> 6;//sign-extention
                     mos_turn(angle);
-                    //printf("mos_turn %d\n",angle);
+                    printf("mos_turn %d\n",angle);
                     break;
                 }
             case 4://mos_go
@@ -63,7 +63,7 @@ void* command_manager(void *){
                     int16_t distance = (int16_t)command.val;
                     distance = (distance << 6) >> 6; //sign-extention
                     mos_go(distance);
-                    //printf("mos_go %d\n",distance);
+                    printf("mos_go %d\n",distance);
                     break;
                 }
             case 5://mos_cir
@@ -94,7 +94,7 @@ void* command_manager(void *){
                     }
                     
                     mos_cir(side,angle,r);
-                    //printf("mos_cir %d %d %d\n", side, angle, r);
+                    printf("mos_cir %d %d %d\n", side, angle, r);
                     
                     break;
                 }
@@ -122,8 +122,7 @@ void* command_manager(void *){
                     }
                     
                     qr_to_qr(init_angle,distance);
-                    //printf("qr_to_qr %d %d\n", init_angle, distance);
-
+                    printf("qr_to_qr %d %d\n", init_angle, distance);
                     break;
                 }
             case 7://to_qr
@@ -162,8 +161,11 @@ void* command_manager(void *){
                         command = command_dcode(instruction);
                     }
                     
+                    printf("to_qr %d %d %d\n", id, end_angle, next_distance);
+                    fflush(stdout);
                     to_qr(id, end_angle, next_distance);
-                    //printf("to_qr %d %d %d\n", id, end_angle, next_distance);
+                    printf("finish to_qr %d %d %d\n", id, end_angle, next_distance);
+                    fflush(stdout);
                     
                     break;
                 }
@@ -176,100 +178,7 @@ void* command_manager(void *){
     }
     
     pthread_exit(0);
-    /*while(1){
-        
-        recv_c(&instruction);
-        command = command_dcode(instruction);
-        
-        #ifdef DEBUG
-            sprintf(msg,"Debug: command in: pf:%d op:%d value:%d",command.pf, command.op, command.val);
-            write_log(msg);
-        #endif
-        
-        switch(command.op){
-            case 0://set_id
-                agv_id = command.val;
-                break;
-            case 1://mos_cos
-                moscorr();
-                break;
-            case 2://qr_turn
-                qr_turn(command.val);
-                break;
-            case 3://mos_turn
-                mos_turn(command.val);
-                break;
-            case 4://mos_go
-                mos_go(command.val);
-                break;
-            case 5://mos_cir
-                {
-                    uint8_t side;
-                    int16_t angle;
-                    uint16_t r;
-
-                    int count = 2;
-                    while(1){
-                        switch(command.pf){
-                            case 0:
-                                side = ( command.val >> 9 ) & 0x01;
-                                angle = (command.val << 7) >> 7;
-                                break;
-                            case 1:
-                                r = command.val;
-                                break;
-                        }
-
-                        if(!--count){ break; }
-
-                        recv_c(&instruction);
-                        command = command_dcode(instruction);
-                    }
-
-                    mos_cir(side,angle,r);
-
-                    break;
-                }
-            case 6://qr_to_qr
-                {
-                    uint16_t init_angle;
-                    int16_t distance;
-
-                    int count = 2;
-                    while(1){
-                        switch(command.pf){
-                            case 0:
-                                init_angle = command.val;
-                                break;
-                            case 1:
-                                distance = (command.val << 6) >> 6;
-                                break;
-                        }
-
-                        if(!--count){ break; }
-
-                        recv_c(&instruction);
-                        command = command_dcode(instruction);
-                    }
-
-                    qr_to_qr(init_angle,distance);
-
-                    break;
-                }
-            case 7://to_qr
-                {
-                    
-                    break;
-                }
-            default:
-                break;
-        }
-        
-        send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
-        
-    }*/
     
-
 }
 
 

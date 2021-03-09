@@ -29,7 +29,26 @@ extern int left_mos;
 extern int right_mos;
 
 
-
+int timer_turn(int target_angle){
+    
+    char msg[50];
+    
+    motor_stop();
+    
+    if(target_angle<0){
+        motor_ctrl(LEFT, BACKWARD, 30);
+        motor_ctrl(RIGHT, FORWARD, 30);
+    }
+    else{
+        motor_ctrl(LEFT, FORWARD, 30);
+        motor_ctrl(RIGHT, BACKWARD, 30);
+    }
+    
+    usleep(10000 * abs(target_angle));
+    
+    motor_stop();
+    return 0;
+}
 
 int qr_turn(int target_angle){
     
@@ -69,13 +88,13 @@ int qr_turn(int target_angle){
         }
         
         
-        if(diff > 30 || diff < -30){
-            mos_turn(30 * (diff/abs(diff)));
+        if(diff > 10 || diff < -10){
+            mos_turn(diff);
         }
-        else if(diff > 1 || diff < -1){
-            mos_turn(diff >> 1);
-            usleep(200000);
-        }
+        else if(diff != 0){
+            timer_turn(diff);
+            usleep(50000);
+        }   
         else{
             usleep(200000);
             count--;
@@ -95,37 +114,13 @@ int qr_turn(int target_angle){
     
 }
 
-int timer_turn(int target_angle){
-    
-    char msg[50];
-    
-    motor_stop();
-    
-    if(target_angle<0){
-        motor_ctrl(LEFT, BACKWARD, 30);
-        motor_ctrl(RIGHT, FORWARD, 30);
-    }
-    else{
-        motor_ctrl(LEFT, FORWARD, 30);
-        motor_ctrl(RIGHT, BACKWARD, 30);
-    }
-    
-    usleep(100000 * abs(target_angle));
-    
-    motor_stop();
-    return 0;
-}
-
 int mos_turn(int target_angle){
     
     char msg[50];
     
     motor_stop();
     
-    if(target_angle < 5){
-        timer_turn(target_angle);
-        return 0;
-    }
+
     
     mos_ordr(left_mos,TO_NULL);
     ipc_clear(mos_ipc[left_mos]);
@@ -249,6 +244,9 @@ int qr_to_qr(uint16_t init_angle, int distance){
 int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
     
     char msg[50];
+    
+    printf("Info: start to_qr\n");
+    
     sprintf(msg,"Info: start to_qr");
     write_log(msg);
     
@@ -265,8 +263,6 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
         }
         
     }
-    
-    motor_stop();
     
     qr_turn(ANGLE_MINUS(end_angle ,(int)(atan2( (cur_qr.x - 160) *0.3 ,next_distance) * (180/3.1416))));
     

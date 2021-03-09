@@ -72,7 +72,7 @@ short valid_qr_id(const uint8_t *input){
 	for(i=0,j=0;input[i] != '\0';i++){
 		
 		if(input[i] >= '0' && input[i] <= '9'){
-			num_only[j] = ' ';
+			num_only[j] = input[i];
 			j++;
 		}
 		
@@ -86,7 +86,7 @@ short valid_qr_id(const uint8_t *input){
 
 void qr_init(){
 	
-	// Nothing here at the moment
+	ordr = TO_NULL;
 	
 	return;
 }
@@ -131,7 +131,7 @@ qr_code get_qr_angle(){
 	
 	
     #ifdef DEBUG
-        sprintf(msg,"Debug: end waiting qr_angle = %d",ret.angle);
+        sprintf(msg,"Debug: end waiting qr_angle = %d, qr_id = %d",ret.angle,ret.id);
         write_log(msg);
     #endif
 	
