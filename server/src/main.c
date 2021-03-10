@@ -10,13 +10,17 @@
 #include <netinet/in.h>
 
 #include "tcp_handler.h"
+#include "log.h"
 #include "endec.h"
 #include "config_manager.h"
 #include "script_manager.h"
 
+
 #define MAX_CLIENT 50
 
 int main(){
+    
+    log_init();
     
    // ws_n **ws_map = get_ws_config(WS_CONFIG);
     //short *bias_angle = get_bias_angle(WS_CONFIG);
@@ -25,17 +29,16 @@ int main(){
     //printf("get_formation\n");
     //y_pos_tracker ans = get_on_fly_pos(ws_map, 25, 135, bias_angle, 108, member_agv);
     //printf("%d %d\n", ans.id, ans.dist);
-
-
-
+    
+    
     
     printf("\n");
     printf("\n");
-    uint16_node *command = get_command(1,1,WS_CONFIG, AGV_CONFIG);
+    command_node *command = get_command(1,1,WS_CONFIG, AGV_CONFIG);
     
     //u_int16_add_to_ll(command, 5, TO_TAIL);
     
-    printf("command address: %u\n", command);
+    //printf("command address: %u\n", command);
     while(command!=NULL){
         printf("command: %x\n", command->val);
         command = command->next;
@@ -50,9 +53,7 @@ int main(){
     printf("done\n");
     get_command(1,5,WS_CONFIG, AGV_CONFIG);
     printf("done\n");*/
-
     
-
     int sockfd = 0;
     
     TCP_adapter_arg tcp_arg;

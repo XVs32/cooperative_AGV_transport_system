@@ -7,9 +7,9 @@ typedef struct m_TCP_adapter_arg{
 }TCP_adapter_arg;
 
 typedef struct t_id_table{
-    int socket;
-    int team;
-    int agv;
+    uint32_t socket;
+    uint16_t team;
+    uint16_t agv;
 }id_table;
 
 void* TCP_accept_adapter(void *);

@@ -8,7 +8,17 @@ header=-I /usr/local/include/ -I ./src/lib/
 lib_adr=./src/lib
 bin_adr=./bin
 
-all: clean tcp_handler endec cJSON config_manager script_manager linklist main
+all: clean log ipc_handler tcp_handler endec cJSON config_manager script_manager linklist main
+
+log:
+	$(CC) $(opt) $(lib_adr)/log.c $(header) -o $(bin_adr)/log.o
+	$(ar) $(bin_adr)/libLog.a $(bin_adr)/log.o
+	rm $(bin_adr)/log.o
+
+ipc_handler:
+	$(CC) $(opt) $(lib_adr)/ipc_handler.c $(header) -o $(bin_adr)/ipc_handler.o
+	$(ar) $(bin_adr)/libIpcHandler.a $(bin_adr)/ipc_handler.o
+	rm $(bin_adr)/ipc_handler.o
 
 tcp_handler:
 	$(CC) $(opt) $(lib_adr)/tcp_handler.c $(header) -o $(bin_adr)/tcp_handler.o
@@ -43,7 +53,7 @@ linklist:
 main:
 	$(CC) -O2 ./src/main.c $(header) \
 	-L ./bin/ \
-	-lTcpHandler -lEndec -lScriptManager -lConfigManager -lLinklist -lcJSON \
+	-lTcpHandler -lEndec -lScriptManager -lConfigManager -lIpcHandler  -lLinklist -lLog -lcJSON \
 	-lpthread -lm \
 	-rdynamic \
 	-Wall -Wextra \

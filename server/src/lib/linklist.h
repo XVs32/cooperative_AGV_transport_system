@@ -18,7 +18,15 @@ typedef struct t_u_short_node{
     struct t_u_short_node *next;
 }uint16_node;
 
+typedef struct t_command_node{
+    uint16_t val;
+    uint8_t sync;
+    struct t_command_node *next;
+}command_node;
+
 void int32_add_to_ll(int32_node *head, int32_node *target, int mode);
 uint16_node* u_int16_add_to_ll(uint16_node *head, uint16_node *target, int mode);
+
+command_node* command_add_to_ll(command_node *head, command_node *target, int mode);
 
 #endif

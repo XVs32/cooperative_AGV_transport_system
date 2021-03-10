@@ -27,5 +27,5 @@ int get_path_size(const char *file_path, int team_id);
 int get_agv_count(const char *file_path, int team_id);
 int get_turn_count(const char *ws_file_path, const char *agv_file_path, int team_id);
 y_pos_tracker get_on_fly_pos(ws_n **ws_map, uint32_t center_checkp, uint16_t angle, short *angle_bias, uint16_t y_bias, coor2d target_agv);
-uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, const char *task_file_path);
+command_node* get_command(int team_id, int agv_id, const char *ws_file_path, const char *task_file_path);
 #endif

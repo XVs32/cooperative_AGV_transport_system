@@ -10,6 +10,8 @@
 #include "linklist.h"
 #include "angle.h"
 
+
+
 uint32_t* get_path(const char *file_path, int team_id){
 
     cJSON *root = read_json_file(file_path);
@@ -201,7 +203,7 @@ y_pos_tracker get_on_fly_pos(ws_n **ws_map, uint32_t center_checkp, uint16_t ang
 }
 
 
-uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, const char *task_file_path){
+command_node* get_command(int team_id, int agv_id, const char *ws_file_path, const char *task_file_path){
 ///////////////////////////////////init start///////////////////////////////////////
     ws_n **ws_map = get_ws_config(WS_CONFIG); //remember to free memory
     short *bias_angle = get_bias_angle(WS_CONFIG); //remember to free memory
@@ -232,8 +234,8 @@ uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, cons
 ///////////////////////////////////init done///////////////////////////////////////
     printf("\nDebug: get_command init done\n\n");
 
-    uint16_node *ret = NULL;
-    uint16_node *new_command;
+    command_node *ret = NULL;
+    command_node *new_command;
     
     uint32_t path_len = get_path_size(AGV_CONFIG, team_id);
     for(i=0;i<path_len-1;i++){
@@ -255,9 +257,10 @@ uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, cons
             u_int8_t is_center = !(agv_pos[agv_id].x | agv_pos[agv_id].y);//0 = false, not 0 = true
             printf("is_center = %d\n",is_center);
             if(is_center){
-                new_command = malloc(sizeof(uint16_node));
+                new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, QR_TURN, ATOR(checkp_n->angle, bias_angle[checkp_c->id]));
-                ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                new_command->sync = 3;//wait for 3 sync, means sync after others finish 3 commands.
+                ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("turn_qr(%d)\n", ATOR(checkp_n->angle, bias_angle[checkp_c->id]));
             }
             else{
@@ -266,9 +269,10 @@ uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, cons
                 //get_tangent_angle return double
                 //+0.5 for rounding
                 
-                new_command = malloc(sizeof(uint16_node));
+                new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_TURN, tangent_angle);
-                ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                new_command->sync = 1; //wait for sync
+                ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("mos_turn(%d)\n", tangent_angle);
                 
                 int32_t turn_angle = get_angle_diff(checkp_c->angle, checkp_n->angle);
@@ -291,18 +295,21 @@ uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, cons
                 command_value += side << 9;
                 command_value += abs(turn_angle) & 0x01ff;
                 
-                new_command = malloc(sizeof(uint16_node));
+                new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_CIR, command_value);
-                ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                new_command->sync = 0; //don't wait for sync
+                ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 
-                new_command = malloc(sizeof(uint16_node));
+                new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(1, MOS_CIR, r & 0x03ff);
-                ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                new_command->sync = 1; //wait for sync
+                ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("mos_cir(%d, %d, %d)\n", side, abs(turn_angle)*inverter, r);
                 
-                new_command = malloc(sizeof(uint16_node));
+                new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_TURN, -tangent_angle);
-                ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                new_command->sync = 1; //wait for sync
+                ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("mos_turn(%d)\n", -tangent_angle);
             }
             checkp_c->angle = checkp_n->angle;
@@ -332,23 +339,27 @@ uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, cons
                     if(remain_dist[j].dist == 0){
                         
                         if(j == agv_id){
-                            new_command = malloc(sizeof(uint16_node));
+                            new_command = malloc(sizeof(command_node));
                             new_command->val = command_ecode(0, TO_QR, remain_dist[j].id >> 8);
-                            ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                            new_command->sync = 0; //don't wait for sync
+                            ret = command_add_to_ll(ret, new_command, TO_TAIL);
 
-                            new_command = malloc(sizeof(uint16_node));
+                            new_command = malloc(sizeof(command_node));
                             new_command->val = command_ecode(1, TO_QR, remain_dist[j].id % 0x00ff);
-                            ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                            new_command->sync = 0; //don't wait for sync
+                            ret = command_add_to_ll(ret, new_command, TO_TAIL);
 
-                            new_command = malloc(sizeof(uint16_node));
+                            new_command = malloc(sizeof(command_node));
                             new_command->val = command_ecode(2, TO_QR,
                                     ATOR(checkp_c->angle,bias_angle[remain_dist[j].id]));
-                            ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                            new_command->sync = 0; //don't wait for sync
+                            ret = command_add_to_ll(ret, new_command, TO_TAIL);
 
-                            new_command = malloc(sizeof(uint16_node));
+                            new_command = malloc(sizeof(command_node));
                             new_command->val = command_ecode(3, TO_QR, 
                                     get_navigation(ws_map[remain_dist[j].id], checkp_c->angle, BY_ANGLE)->dist);
-                            ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                            new_command->sync = 1; //wait for sync
+                            ret = command_add_to_ll(ret, new_command, TO_TAIL);
                             printf("to_qr(%05d,%d,%d)\n", remain_dist[j].id, 
                                     ATOR(checkp_c->angle,bias_angle[remain_dist[j].id]),
                                     get_navigation(ws_map[remain_dist[j].id], checkp_c->angle, BY_ANGLE)->dist);
@@ -362,9 +373,10 @@ uint16_node* get_command(int team_id, int agv_id, const char *ws_file_path, cons
                     }
                     else{
                         if(j == agv_id){
-                            new_command = malloc(sizeof(uint16_node));
+                            new_command = malloc(sizeof(command_node));
                             new_command->val = command_ecode(0, MOS_GO, min);
-                            ret = u_int16_add_to_ll(ret, new_command, TO_TAIL);
+                            new_command->sync = 1; //wait for sync
+                            ret = command_add_to_ll(ret, new_command, TO_TAIL);
                             printf("mos_go(%d)\n", min);
                         }
                     }
