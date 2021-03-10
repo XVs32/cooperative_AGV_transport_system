@@ -44,7 +44,7 @@ int timer_turn(int target_angle){
         motor_ctrl(RIGHT, BACKWARD, 30);
     }
     
-    usleep(10000 * abs(target_angle));
+    usleep(5000 * abs(target_angle));
     
     motor_stop();
     return 0;
@@ -57,7 +57,6 @@ int qr_turn(int target_angle){
         sprintf(msg,"Debug: Start turning to %d using QR code",target_angle);
         write_log(msg);
     #endif
-    
     
     int count = 10;
     while(count){
@@ -87,8 +86,10 @@ int qr_turn(int target_angle){
             mos_go((cur_qr.y - 120)*0.3*0.5);
         }
         
-        
-        if(diff > 10 || diff < -10){
+        if(diff > 30 || diff < -30){
+            mos_turn(30 * (diff >> (sizeof(int) * 8 - 1)) | 0x01); //30 * get_sign_of_diff, which is +1 or -1
+        }
+        else if(diff > 10 || diff < -10){
             mos_turn(diff);
         }
         else if(diff != 0){
@@ -119,8 +120,6 @@ int mos_turn(int target_angle){
     char msg[50];
     
     motor_stop();
-    
-
     
     mos_ordr(left_mos,TO_NULL);
     ipc_clear(mos_ipc[left_mos]);

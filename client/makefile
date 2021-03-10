@@ -17,7 +17,7 @@ all: clean log ipc_handler tcp_handler timerfd camera qr_code mouse endec motor 
 
 log:
 	$(CC) $(opt) $(lib_adr)/log.c $(header) -o $(bin_adr)/log.o
-	$(ar) $(bin_adr)/libIpcHandler.a $(bin_adr)/log.o
+	$(ar) $(bin_adr)/libLog.a $(bin_adr)/log.o
 
 ipc_handler:
 	$(CC) $(opt) $(lib_adr)/ipc_handler.c $(header) -o $(bin_adr)/ipc_handler.o
@@ -71,7 +71,7 @@ main:
 	-L ./bin/ \
 	-L /opt/vc/lib/ \
 	-L ./src/lib/ZXing/ZXingCore \
-	-lCommandManager -lMotor -lCamera -lQrReader -lMouse -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc -lCommand \
+	-lCommandManager -lMotor -lCamera -lQrReader -lMouse -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc -lCommand -lLog \
 	-lZXingCore -lopencv_core -lraspicam -lraspicam_cv -lmmal_core -lmmal_util -lmmal \
 	-lopencv_imgproc -lopencv_imgcodecs -lpthread -lwiringPi -lm \
 	-rdynamic \

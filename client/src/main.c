@@ -86,6 +86,13 @@ int main (){
 	}
 	camera_ipc =ipc_accept(serv_ipc);
 	
+	
+	printf("mos_ipc[0] = %d\n", mos_ipc[0]);
+	printf("mos_ipc[1] = %d\n", mos_ipc[1]);
+	printf("qr_ipc = %d\n", qr_ipc);
+	printf("camera_ipc = %d\n", camera_ipc);
+	printf("command_ipc = %d\n", command_ipc);
+	
 	moscorr();
 	sleep(1);
 	qr_turn(270);
