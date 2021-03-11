@@ -92,7 +92,7 @@ int qr_turn(int target_angle){
         else if(diff > 10 || diff < -10){
             mos_turn(diff);
         }
-        else if(diff != 0){
+        else if(diff > 1 || diff < -1){
             timer_turn(diff);
             usleep(50000);
         }   

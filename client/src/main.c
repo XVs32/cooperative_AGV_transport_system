@@ -95,7 +95,7 @@ int main (){
 	
 	moscorr();
 	sleep(1);
-	qr_turn(270);
+	qr_turn(90);
 	sleep(1);
 	
     tcp_init();//agv ready to go from now on
