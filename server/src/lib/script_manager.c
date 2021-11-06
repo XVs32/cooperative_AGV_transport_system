@@ -278,24 +278,24 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 printf("qe_turn(%d)\n", tangent_angle);
                 
                 int32_t turn_angle = get_angle_diff(checkp_c->angle, checkp_n->angle);
-                int8_t side = ((turn_angle >> 31) & 0x01) ^ 0x01; //0 for LEFT, 1 for RIGHT
+                int8_t side; //0 for LEFT, 1 for RIGHT
                 
-                int32_t inverter;
-                if(get_central_angle(agv_pos[agv_id].x, agv_pos[agv_id].y)<90){
-                    inverter = side?-1:1;
+                if(agv_pos[agv_id].x<0){
+                    side = 1; //the centre of formation is on the right side of AGV
                 }
-                else if(get_central_angle(agv_pos[agv_id].x, agv_pos[agv_id].y)<=270){
-                    inverter = side?1:-1;
+                else{
+                    side = 0; //the centre of formation is on the left side of AGV
                 }
-                else {
-                    inverter = side?-1:1;
+                
+                int32_t inverter = 1;
+                if(!side){
+                    inverter = -1;
                 }
-
-
+                
                 int r = sqrt(pow(500*agv_pos[agv_id].x, 2) + pow(agv_pos[agv_id].y, 2));
                 uint16_t command_value = 0;
                 command_value += side << 9;
-                command_value += abs(turn_angle) & 0x01ff;
+                command_value += (turn_angle*inverter) & 0x01ff;
                 
                 new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_CIR, command_value);
@@ -306,7 +306,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 new_command->val = command_ecode(1, MOS_CIR, r & 0x03ff);
                 new_command->sync = 1; //wait for sync
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                printf("qe_cir(%d, %d, %d)\n", side, abs(turn_angle)*inverter, r);
+                printf("qe_cir(%d, %d, %d)\n", side, turn_angle*inverter, r);
                 
                 new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_TURN, -tangent_angle);
