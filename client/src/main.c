@@ -16,7 +16,7 @@
 #include "tcp_handler.h"
 #include "camera.h"
 #include "qr_reader.h"
-#include "mouse.h"
+#include "qe.h"
 #include "timer.h"
 #include "motor.h"
 #include "command_manager.h"
@@ -25,8 +25,6 @@
 #include "log.h"
 
 using namespace std;
-
-
 
 struct timespec now;
 
@@ -43,65 +41,48 @@ int main (){
 	pin_init();
 	camera_init();
 	qr_init();
-	mos_init();
+	qe_init();
 	int serv_ipc = ipc_listen();
 	
 	pthread_t t_qr_reader;
 	pthread_t t_camera_fd;
-	pthread_t t_mos_reader_0;
-	pthread_t t_mos_reader_1;
 	pthread_t t_command_manager;
 	
 	int pth = -1;
 	
-	int mos_reader_0_arg = 0;
-    pth = pthread_create(&t_mos_reader_0, NULL, mos_reader, &mos_reader_0_arg);
-    if(pth<0){
-        printf("cannot create thread 't_mos_reader_0', exit\n");
-        exit(1);
-    }
-	mos_ipc[0] =ipc_accept(serv_ipc);
-	printf("mos_reader_0 start running\n");
-    
-    int mos_reader_1_arg = 1;
-    pth = pthread_create(&t_mos_reader_1, NULL, mos_reader, &mos_reader_1_arg);
-    if(pth<0){
-        printf("cannot create thread 't_mos_reader_1', exit\n");
-        exit(1);
-    }
-	mos_ipc[1] =ipc_accept(serv_ipc);
-	printf("mos_reader_1 start running\n");
-	
-	pthread_create(&t_qr_reader, NULL, qr_reader, NULL);
+	pth = pthread_create(&t_qr_reader, NULL, qr_reader, NULL);
 	if(pth<0){
 		printf("cannot create thread 'qr_reader', exit\n");
 		exit(1);
 	}
 	qr_ipc =ipc_accept(serv_ipc);
 	
-	pthread_create(&t_camera_fd, NULL, camera_exec, NULL);
+	pth = pthread_create(&t_camera_fd, NULL, camera_exec, NULL);
 	if(pth<0){
 		printf("cannot create thread 'camera_exec', exit\n");
 		exit(1);
 	}
 	camera_ipc =ipc_accept(serv_ipc);
 	
-	
-	printf("mos_ipc[0] = %d\n", mos_ipc[0]);
-	printf("mos_ipc[1] = %d\n", mos_ipc[1]);
 	printf("qr_ipc = %d\n", qr_ipc);
 	printf("camera_ipc = %d\n", camera_ipc);
 	printf("command_ipc = %d\n", command_ipc);
 	
-	moscorr();
+	qe_corr();
 	sleep(1);
-	qr_turn(270);
+	qr_turn(180);
+	sleep(1);
+	printf("qecir start\n");
+	qe_cir(LEFT,180,250);
+	printf("qecir done\n");
+	sleep(1);
+	qr_turn(90);
 	sleep(1);
 	
     tcp_init();//agv ready to go from now on
 	printf("agv ready to go from now on\n");
     
-    pthread_create(&t_command_manager, NULL, command_manager, NULL);
+    pth = pthread_create(&t_command_manager, NULL, command_manager, NULL);
 	if(pth<0){
 		printf("cannot create thread 'camera_exec', exit\n");
 		exit(1);
@@ -155,8 +136,7 @@ int main (){
 	*/
 	printf("finsh, back to main.\n");
 	
-	pthread_join(t_mos_reader_0,NULL); //None of this pthread_join should exec.
-	pthread_join(t_mos_reader_1,NULL);
+	//None of this pthread_join should exec.
 	pthread_join(t_qr_reader,NULL);
 	pthread_join(t_camera_fd,NULL);
 	pthread_join(t_command_manager,NULL);

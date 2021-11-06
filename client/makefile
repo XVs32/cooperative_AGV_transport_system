@@ -13,7 +13,7 @@ ifdef DEBUG
 	opt=-O2 -D DEBUG -c
 endif
 
-all: clean log ipc_handler tcp_handler timerfd camera qr_code mouse endec motor command_manager command main
+all: clean log ipc_handler tcp_handler timerfd camera qr_code qe endec motor command_manager command main
 
 log:
 	$(CC) $(opt) $(lib_adr)/log.c $(header) -o $(bin_adr)/log.o
@@ -43,9 +43,9 @@ qr_code:
 	-o $(bin_adr)/qr_reader.o
 	$(ar) $(bin_adr)/libQrReader.a $(bin_adr)/qr_reader.o
 
-mouse:
-	$(CC) $(opt) $(lib_adr)/mouse.c $(header) -o $(bin_adr)/mouse.o
-	$(ar) $(bin_adr)/libMouse.a $(bin_adr)/mouse.o
+qe:
+	$(CC) $(opt) $(lib_adr)/qe.c $(header) -o $(bin_adr)/qe.o
+	$(ar) $(bin_adr)/libQe.a $(bin_adr)/qe.o
 
 endec:
 	$(CC) $(opt) $(lib_adr)/endec.c $(header) -o $(bin_adr)/endec.o
@@ -71,7 +71,7 @@ main:
 	-L ./bin/ \
 	-L /opt/vc/lib/ \
 	-L ./src/lib/ZXing/ZXingCore \
-	-lCommandManager -lMotor -lCamera -lQrReader -lMouse -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc -lCommand -lLog \
+	-lCommandManager -lMotor -lCamera -lQrReader -lQe -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc -lCommand -lLog \
 	-lZXingCore -lopencv_core -lraspicam -lraspicam_cv -lmmal_core -lmmal_util -lmmal \
 	-lopencv_imgproc -lopencv_imgcodecs -lpthread -lwiringPi -lm \
 	-rdynamic \

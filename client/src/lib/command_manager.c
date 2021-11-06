@@ -10,7 +10,7 @@
 #include <pthread.h>
 
 #include "endec.h"
-#include "mouse.h"
+#include "qe.h"
 #include "motor.h"
 #include "tcp_handler.h"
 #include "command_manager.h"
@@ -34,39 +34,47 @@ void* command_manager(void *){
         recv_c(&instruction);
         command = command_dcode(instruction);
         
-            
-        
         switch(command.op){
             case 0://set_id
                 agv_id = command.val;
-                printf("set id\n");
+                #ifdef DEBUG
+                    write_log("set id");
+                #endif
                 break;
             case 1://mos_cos
-                moscorr();
-                printf("moscor\n");
+                qe_corr();
+                #ifdef DEBUG
+                    write_log("qecor");
+                #endif
                 break;
             case 2://qr_turn
                 qr_turn(command.val);
                 printf("qr_turn %d\n",command.val);
                 break;
-            case 3://mos_turn
+            case 3://qe_turn
                 {
                     int16_t angle = (int16_t)command.val;
                     angle = angle << 6;//sign-extention
                     angle = angle >> 6;//sign-extention
-                    mos_turn(angle);
-                    printf("mos_turn %d\n",angle);
+                    qe_turn(angle);
+                    #ifdef DEBUG
+                        sprintf(msg, "qe_turn %d\n",angle);
+                        write_log(msg);
+                    #endif
                     break;
                 }
-            case 4://mos_go
+            case 4://qe_go
                 {
                     int16_t distance = (int16_t)command.val;
                     distance = (distance << 6) >> 6; //sign-extention
-                    mos_go(distance);
-                    printf("mos_go %d\n",distance);
+                    qe_go(distance);
+                    #ifdef DEBUG
+                        sprintf(msg, "qe_go %d\n",distance);
+                        write_log(msg);
+                    #endif
                     break;
                 }
-            case 5://mos_cir
+            case 5://qe_cir
                 {
                     uint8_t side;
                     int16_t angle;
@@ -93,8 +101,11 @@ void* command_manager(void *){
                         command = command_dcode(instruction);
                     }
                     
-                    mos_cir(side,angle,r);
-                    printf("mos_cir %d %d %d\n", side, angle, r);
+                    qe_cir(side,angle,r);
+                    #ifdef DEBUG
+                        sprintf(msg, "qe_cir %d %d %d\n", side, angle, r);
+                        write_log(msg);
+                    #endif
                     
                     break;
                 }
@@ -122,7 +133,10 @@ void* command_manager(void *){
                     }
                     
                     qr_to_qr(init_angle,distance);
-                    printf("qr_to_qr %d %d\n", init_angle, distance);
+                    #ifdef DEBUG
+                        sprintf(msg, "qr_to_qr %d %d\n", init_angle, distance);
+                        write_log(msg);
+                    #endif
                     break;
                 }
             case 7://to_qr
@@ -161,10 +175,17 @@ void* command_manager(void *){
                         command = command_dcode(instruction);
                     }
                     
-                    printf("to_qr %d %d %d\n", id, end_angle, next_distance);
+                    #ifdef DEBUG
+                        sprintf(msg, "to_qr %d %d %d\n", id, end_angle, next_distance);
+                        write_log(msg);
+                    #endif
                     fflush(stdout);
+                    
                     to_qr(id, end_angle, next_distance);
-                    printf("finish to_qr %d %d %d\n", id, end_angle, next_distance);
+                    #ifdef DEBUG
+                        sprintf(msg, "finish to_qr %d %d %d\n", id, end_angle, next_distance);
+                        write_log(msg);
+                    #endif
                     fflush(stdout);
                     
                     break;
@@ -172,7 +193,6 @@ void* command_manager(void *){
             default:
                 break;
         }
-        
         send_s(sensor_data_encoder( agv_id, 0x07, 0xffffffff)); //ack signal
         
     }
@@ -180,10 +200,3 @@ void* command_manager(void *){
     pthread_exit(0);
     
 }
-
-
-
-
-
-
-

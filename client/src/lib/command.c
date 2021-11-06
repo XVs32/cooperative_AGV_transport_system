@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mouse.h"
+#include "qe.h"
 #include "motor.h"
 #include "camera.h"
 #include "qr_reader.h"
@@ -23,10 +23,8 @@
 extern float parel[2];//pixel_angle_relation for mouse
 extern float pdrel[2];//pixel_distance_relation for mouse
 
-extern int mos_ipc[2];
+extern volatile long pos[2];
 extern int qr_ipc;
-extern int left_mos;
-extern int right_mos;
 
 
 int timer_turn(int target_angle){
@@ -36,12 +34,12 @@ int timer_turn(int target_angle){
     motor_stop();
     
     if(target_angle<0){
-        motor_ctrl(LEFT, BACKWARD, 30);
-        motor_ctrl(RIGHT, FORWARD, 30);
+        motor_ctrl(LEFT, BACKWARD, 100);
+        motor_ctrl(RIGHT, FORWARD, 100);
     }
     else{
-        motor_ctrl(LEFT, FORWARD, 30);
-        motor_ctrl(RIGHT, BACKWARD, 30);
+        motor_ctrl(LEFT, FORWARD, 100);
+        motor_ctrl(RIGHT, BACKWARD, 100);
     }
     
     usleep(5000 * abs(target_angle));
@@ -63,11 +61,11 @@ int qr_turn(int target_angle){
         qr_code cur_qr = get_qr_angle();//current qr code angle
         
         if(cur_qr.angle == 500){
-            motor_ctrl(LEFT, BACKWARD, 30);
-            motor_ctrl(RIGHT, FORWARD, 30);
+            motor_ctrl(LEFT, BACKWARD, 100);
+            motor_ctrl(RIGHT, FORWARD, 100);
             usleep(20000);
-            motor_ctrl(LEFT, FORWARD, 30);
-            motor_ctrl(RIGHT, BACKWARD, 30);
+            motor_ctrl(LEFT, FORWARD, 100);
+            motor_ctrl(RIGHT, BACKWARD, 100);
             usleep(20000);
             motor_stop();
             continue;
@@ -83,14 +81,14 @@ int qr_turn(int target_angle){
         #endif
         
         if(cur_qr.y<100 || cur_qr.y>140){
-            mos_go((cur_qr.y - 120)*0.3*0.5);
+            qe_go((cur_qr.y - 120)*0.3*0.5);
         }
         
         if(diff > 30 || diff < -30){
-            mos_turn(30 * (diff >> (sizeof(int) * 8 - 1)) | 0x01); //30 * get_sign_of_diff, which is +1 or -1
+            qe_turn(30 * (diff >> (sizeof(int) * 8 - 1)) | 0x01); //30 * get_sign_of_diff, which is +1 or -1
         }
         else if(diff > 10 || diff < -10){
-            mos_turn(diff);
+            qe_turn(diff);
         }
         else if(diff != 0){
             timer_turn(diff);
@@ -115,87 +113,64 @@ int qr_turn(int target_angle){
     
 }
 
-int mos_turn(int target_angle){
+int qe_turn(int target_angle){
     
     char msg[50];
     
     motor_stop();
-    
-    mos_ordr(left_mos,TO_NULL);
-    ipc_clear(mos_ipc[left_mos]);
-    mos_ordr(left_mos,TO_IPC);
+    pos_reset();
     
     #ifdef DEBUG
-        sprintf(msg,"Debug: start turning %d with mouse",target_angle);
+        sprintf(msg,"Debug: start turning %d with qe",target_angle);
         write_log(msg);
     #endif
     
     if(target_angle<0){
-        motor_ctrl(LEFT, BACKWARD, 30);
-        motor_ctrl(RIGHT, FORWARD, 30);
+        motor_ctrl(LEFT, BACKWARD, 100);
+        motor_ctrl(RIGHT, FORWARD, 100);
     }
     else{
-        motor_ctrl(LEFT, FORWARD, 30);
-        motor_ctrl(RIGHT, BACKWARD, 30);
+        motor_ctrl(LEFT, FORWARD, 100);
+        motor_ctrl(RIGHT, BACKWARD, 100);
     }
     
-    int mos_sum = 0;//pixel value sum
+    
     int tem;
-    while(abs(mos_sum)<abs(target_angle)*parel[left_mos]){
-        
-        recv(mos_ipc[left_mos], &tem, sizeof(int),MSG_WAITALL);
-        mos_sum += tem;
+    while(abs(pos[0])<abs(target_angle)*parel[0]){
         
         #ifdef DEBUG
-            sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
+            sprintf(msg,"Debug: waiting qe, pos[0] = %d",pos[0]);
             write_log(msg);
         #endif
-        
     }
     
     motor_stop();
-    
-    mos_ordr(left_mos,TO_NULL);
-    ipc_clear(mos_ipc[left_mos]);
     
     return 0;
 }
 
 
-int mos_go(int distance){
+int qe_go(int distance){
     
     char msg[50];
     
     motor_stop();
-    
-    mos_ordr(left_mos,TO_NULL);
-    ipc_clear(mos_ipc[left_mos]);
-    mos_ordr(left_mos,TO_IPC);
+    pos_reset();
     
     sprintf(msg,"Info: start go_mos distance:%d ",distance);
     write_log(msg);
     
-    motor_ctrl(LEFT, distance>>(sizeof(int)*8-1), 30);
-    motor_ctrl(RIGHT, distance>>(sizeof(int)*8-1), 30);
+    motor_ctrl(LEFT, distance>>(sizeof(int)*8-1), 100);
+    motor_ctrl(RIGHT, distance>>(sizeof(int)*8-1), 100);
     
-    int mos_sum = 0;//pixel value sum
-    int tem;
-    while(abs(mos_sum)<abs(distance*pdrel[left_mos])){
-        
-        recv(mos_ipc[left_mos], &tem, sizeof(int),MSG_WAITALL);
-        mos_sum += tem;
-        
+    while(abs(pos[0])<abs(distance*pdrel[0])){
         #ifdef DEBUG
-            sprintf(msg,"Debug: waiting mouse, mos_sum = %d",mos_sum);
+            sprintf(msg,"Debug: waiting mouse, pos[0] = %d",pos[0]);
             write_log(msg);
         #endif
-        
     }
     
     motor_stop();
-    
-    mos_ordr(left_mos,TO_NULL);
-    ipc_clear(mos_ipc[left_mos]);
     
     return 0;
 }
@@ -204,15 +179,13 @@ int qr_to_qr(uint16_t init_angle, int distance){
     
     char msg[50];
     
-    write_log(msg);
-    
     qr_turn(init_angle);
     
     qr_code cur_qr = get_qr_angle();//current qr code angle
     qr_turn( ( (int)(init_angle - atan2( (cur_qr.x - 160) *0.3 ,distance) ) + 360) % 360);
     
     cur_qr = get_qr_angle();//current qr code angle
-    mos_go(distance + (cur_qr.y - 120) * 0.3 );
+    qe_go(distance + (cur_qr.y - 120) * 0.3 );
     
     sprintf(msg,"Info: start qr_to_qr distance:%d ",distance);
     write_log(msg);
@@ -224,9 +197,9 @@ int qr_to_qr(uint16_t init_angle, int distance){
         return cur_qr.angle;
     }
     
-    while(1){
+    while(1){//if no qr code find, go forward for a short distance and try again
         
-        mos_go(30);
+        qe_go(30);
         cur_qr = get_qr_angle();//current qr code angle
         
         if(cur_qr.angle != 500){
@@ -244,13 +217,11 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
     
     char msg[50];
     
-    printf("Info: start to_qr\n");
-    
     sprintf(msg,"Info: start to_qr");
     write_log(msg);
     
-    motor_ctrl(LEFT, FORWARD, 30);
-    motor_ctrl(RIGHT, FORWARD, 30);
+    motor_ctrl(LEFT, FORWARD, 100);
+    motor_ctrl(RIGHT, FORWARD, 100);
 
     qr_code cur_qr;
     
@@ -260,7 +231,6 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
             motor_stop();
             break;
         }
-        
     }
     
     qr_turn(ANGLE_MINUS(end_angle ,(int)(atan2( (cur_qr.x - 160) *0.3 ,next_distance) * (180/3.1416))));
@@ -269,84 +239,58 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
 }
 
 
-void mos_cir(uint8_t side, uint16_t angle, uint16_t r){
+void qe_cir(uint8_t side, uint16_t angle, uint16_t r){
     char msg[50];
     
-    int left_distance;
-    int right_distance;
+    float left_distance;
+    float right_distance;
     
     char way = (angle >> 15) & 0x01;
+    motor_stop();
+    pos_reset();
     
     if(side == LEFT){
-        left_distance = 2*3.14 * (r-82.5) * angle/ 360;
-        right_distance = 2*3.14 * (r+82.5) * angle/ 360;
+        left_distance = 2*3.14 * (r-120) * angle/ 360;
+        right_distance = 2*3.14 * (r+120) * angle/ 360;
         
         left_distance *= 1;
         right_distance *= 1;
         
-        sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
-        write_log(msg);
+        printf("left_distance %f\n",left_distance);
+        printf("right_distance %f\n",right_distance);
+
+        #ifdef DEBUG
+            sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
+            write_log(msg);
+        #endif
         
-        motor_stop();
         
-        mos_ordr(left_mos,TO_NULL);
-        mos_ordr(right_mos,TO_NULL);
-        ipc_clear(mos_ipc[left_mos]);
-        ipc_clear(mos_ipc[right_mos]);
-        mos_ordr(left_mos,TO_IPC);
-        mos_ordr(right_mos,TO_IPC);
-        
-        int left_sum = 0;//pixel value sum
-        int right_sum = 0;
-        
-        int mode = 0;
+        motor_ctrl(RIGHT, FORWARD, 100);
         
         while(1){
             
             int flag = 0;
-            while(flag==0){
-                flag = 1;
-                
-                int tem;
-                while(recv(mos_ipc[right_mos],&tem, sizeof(int), MSG_DONTWAIT)>0){
-                    right_sum += tem;
-                    flag = 0;
-                }
-                while(recv(mos_ipc[left_mos],&tem, sizeof(int), MSG_DONTWAIT)>0){
-                    left_sum += tem;
-                    flag = 0;
-                }
-                
-                
-            }
             
-            #ifdef DEBUG
-                sprintf(msg,"DEBUG: left_sum:%d, right_sum:%d",left_sum,right_sum);
+            #ifdef DEBU
+                sprintf(msg,"DEBUG: pos[0]:%d, pos[1]:%d",pos[0],pos[1]);
                 write_log(msg);
             #endif
             
-            if(right_sum > abs(right_distance*pdrel[right_mos])){
+            if(abs(pos[1]) > abs(right_distance*pdrel[1])){
                 break;
             }
             
-            if((float)((float)(right_sum*1.10)/(float)right_distance) < (float)((float)(left_sum*1)/(float)left_distance) ){
+            if(abs(pos[1])/right_distance < abs(pos[0])/left_distance){
                 motor_ctrl(LEFT, FORWARD, 0);
             }
             else{
-                motor_ctrl(LEFT, FORWARD, 30);
+                motor_ctrl(LEFT, FORWARD, 100);
             }
-            motor_ctrl(RIGHT, FORWARD, 30);
-            
         }
         
         motor_stop();
         
     }
-    
-    mos_ordr(left_mos,TO_NULL);
-    mos_ordr(right_mos,TO_NULL);
-    ipc_clear(mos_ipc[left_mos]);
-    ipc_clear(mos_ipc[right_mos]);
     
     return;
 }
