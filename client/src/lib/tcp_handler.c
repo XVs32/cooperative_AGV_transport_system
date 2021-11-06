@@ -20,7 +20,7 @@ uint8_t agv_id = 255;//default, should be renew after the first contact with ser
 
 void tcp_init(){
     
-    FILE *fp = open(SERVER_IP, "r");
+    FILE *fp = fopen(SERVER_IP, "r");
     char server_ip[32];
     fgets(server_ip, 32, fp); 
     

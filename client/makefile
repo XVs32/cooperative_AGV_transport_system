@@ -70,9 +70,8 @@ main:
 	$(CC) -O3 ./src/main.c $(header) \
 	-L ./bin/ \
 	-L /opt/vc/lib/ \
-	-L ./src/lib/ZXing/ZXingCore \
 	-lCommandManager -lMotor -lCamera -lQrReader -lQe -lTcpHandler -lEndec -lTimer -lIpcHandler -lquirc -lCommand -lLog \
-	-lZXingCore -lopencv_core -lraspicam -lraspicam_cv -lmmal_core -lmmal_util -lmmal \
+	-lopencv_core -lraspicam -lraspicam_cv -lmmal_core -lmmal_util -lmmal \
 	-lopencv_imgproc -lopencv_imgcodecs -lpthread -lwiringPi -lm \
 	-rdynamic \
 	-Wall -Wextra \

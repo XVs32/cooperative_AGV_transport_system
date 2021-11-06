@@ -84,8 +84,11 @@ int qr_turn(int target_angle){
             qe_go((cur_qr.y - 120)*0.3*0.5);
         }
         
-        if(diff > 30 || diff < -30){
-            qe_turn(30 * (diff >> (sizeof(int) * 8 - 1)) | 0x01); //30 * get_sign_of_diff, which is +1 or -1
+        if(diff > 30){
+            qe_turn(30);
+        }
+        else if(diff < -30){
+            qe_turn(-30);
         }
         else if(diff > 10 || diff < -10){
             qe_turn(diff);
@@ -239,20 +242,25 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
 }
 
 
-void qe_cir(uint8_t side, uint16_t angle, uint16_t r){
+void qe_cir(uint8_t side, int16_t angle, uint16_t r){
     char msg[50];
     
     float left_distance;
     float right_distance;
     
-    char way = (angle >> 15) & 0x01;
+    int way = FORWARD; //0 for forward, -1 for backward
+    if(angle < 0){
+        way = BACKWARD;
+    }
     motor_stop();
     pos_reset();
     
     if(side == LEFT){
         left_distance = 2*3.14 * (r-120) * angle/ 360;
         right_distance = 2*3.14 * (r+120) * angle/ 360;
-        
+        left_distance = abs(left_distance);
+        right_distance = abs(right_distance);
+
         #ifdef DEBUG
             sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
             write_log(msg);
@@ -283,6 +291,8 @@ void qe_cir(uint8_t side, uint16_t angle, uint16_t r){
     else if(side == RIGHT){
         left_distance = 2*3.14 * (r+120) * angle/ 360;
         right_distance = 2*3.14 * (r-120) * angle/ 360;
+        left_distance = abs(left_distance);
+        right_distance = abs(right_distance);
         
         #ifdef DEBUG
             sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);

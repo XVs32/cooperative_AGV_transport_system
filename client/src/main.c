@@ -70,14 +70,15 @@ int main (){
 	
 	qe_corr();
 	sleep(1);
-	qr_turn(180);
-	sleep(1);
-	printf("qecir start\n");
-	qe_cir(LEFT,180,250);
-	printf("qecir done\n");
-	sleep(1);
+	qr_turn(0);
+    to_qr(26, 0,500);
 	qr_turn(90);
+    qe_go(100);
 	sleep(1);
+
+	/*printf("qecir start\n");
+	qe_cir(LEFT,180,250);
+	printf("qecir done\n");*/
 	
     tcp_init();//agv ready to go from now on
 	printf("agv ready to go from now on\n");
