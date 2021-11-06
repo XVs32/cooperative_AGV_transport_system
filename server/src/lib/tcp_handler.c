@@ -228,8 +228,23 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
                 break;
             case 7:
                 if(input.val == 0x001fffff){//ack signal
-                    printf("Debug: send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
+                    
                     int sync_count = text->sync;
+                    while(sync_count--){
+                        set_sync(id->team, id->agv);
+                        char buf[50];
+                        
+                        printf("Debug: agv_ipc_sev[%d][%d] = %d\n", id->team, id->agv, agv_ipc_sev[id->team][id->agv]);
+                        printf("Debug: waiting to read agv_ipc_cli[%d][%d] = %d\n", id->team, id->agv,agv_ipc_cli[id->team][id->agv]);
+                        int read_check = read(agv_ipc_cli[id->team][id->agv], buf, sizeof(char) * 8);
+                        if(read_check != 8){
+                            printf("Error: set_sync ipc return a buf which size = %d, it should be 8\n", read_check);
+                        }
+                        printf("Debug: %.8s\n", buf);
+                    }
+                    
+                    printf("Debug: send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
+                    
                     if(send(id->socket,&(text->val),sizeof(uint16_t),0)<0){
                         printf("Error: Fail to send data, sockfd = %d, data = 0x%X. exit.\n", id->socket, text->val);
                         exit(0);
@@ -244,18 +259,7 @@ void TCP_linstener(id_table *id){ //sockfd is also the agv_id of this connection
                     }
                     
                     
-                    while(sync_count--){
-                        set_sync(id->team, id->agv);
-                        char buf[50];
-                        
-                        printf("Debug: agv_ipc_sev[%d][%d] = %d\n", id->team, id->agv, agv_ipc_sev[id->team][id->agv]);
-                        printf("Debug: waiting to read agv_ipc_cli[%d][%d] = %d\n", id->team, id->agv,agv_ipc_cli[id->team][id->agv]);
-                        int read_check = read(agv_ipc_cli[id->team][id->agv], buf, sizeof(char) * 8);
-                        if(read_check != 8){
-                            printf("Error: set_sync ipc return a buf which size = %d, it should be 8\n", read_check);
-                        }
-                        printf("Debug: %.8s\n", buf);
-                    }
+                    
                 }
                 break;
         }

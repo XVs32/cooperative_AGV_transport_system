@@ -237,6 +237,8 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
     command_node *ret = NULL;
     command_node *new_command;
     
+    
+    
     uint32_t path_len = get_path_size(AGV_CONFIG, team_id);
     for(i=0;i<path_len-1;i++){
         
@@ -273,7 +275,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 new_command->val = command_ecode(0, MOS_TURN, tangent_angle);
                 new_command->sync = 1; //wait for sync
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                printf("mos_turn(%d)\n", tangent_angle);
+                printf("qe_turn(%d)\n", tangent_angle);
                 
                 int32_t turn_angle = get_angle_diff(checkp_c->angle, checkp_n->angle);
                 int8_t side = ((turn_angle >> 31) & 0x01) ^ 0x01; //0 for LEFT, 1 for RIGHT
@@ -304,13 +306,13 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 new_command->val = command_ecode(1, MOS_CIR, r & 0x03ff);
                 new_command->sync = 1; //wait for sync
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                printf("mos_cir(%d, %d, %d)\n", side, abs(turn_angle)*inverter, r);
+                printf("qe_cir(%d, %d, %d)\n", side, abs(turn_angle)*inverter, r);
                 
                 new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_TURN, -tangent_angle);
                 new_command->sync = 1; //wait for sync
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                printf("mos_turn(%d)\n", -tangent_angle);
+                printf("qe_turn(%d)\n", -tangent_angle);
             }
             checkp_c->angle = checkp_n->angle;
 
@@ -356,13 +358,11 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                             ret = command_add_to_ll(ret, new_command, TO_TAIL);
 
                             new_command = malloc(sizeof(command_node));
-                            new_command->val = command_ecode(3, TO_QR, 
-                                    get_navigation(ws_map[remain_dist[j].id], checkp_c->angle, BY_ANGLE)->dist);
+                            new_command->val = command_ecode(3, TO_QR, min);
                             new_command->sync = 1; //wait for sync
                             ret = command_add_to_ll(ret, new_command, TO_TAIL);
                             printf("to_qr(%05d,%d,%d)\n", remain_dist[j].id, 
-                                    ATOR(checkp_c->angle,bias_angle[remain_dist[j].id]),
-                                    get_navigation(ws_map[remain_dist[j].id], checkp_c->angle, BY_ANGLE)->dist);
+                                    ATOR(checkp_c->angle,bias_angle[remain_dist[j].id]),min);
                         }
                         
                         if(j == 0){//virtual center agv reach next checkp
@@ -377,7 +377,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                             new_command->val = command_ecode(0, MOS_GO, min);
                             new_command->sync = 1; //wait for sync
                             ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                            printf("mos_go(%d)\n", min);
+                            printf("qe_go(%d)\n", min);
                         }
                     }
                 }
