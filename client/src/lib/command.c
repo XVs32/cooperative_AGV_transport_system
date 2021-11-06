@@ -253,25 +253,16 @@ void qe_cir(uint8_t side, uint16_t angle, uint16_t r){
         left_distance = 2*3.14 * (r-120) * angle/ 360;
         right_distance = 2*3.14 * (r+120) * angle/ 360;
         
-        left_distance *= 1;
-        right_distance *= 1;
-        
-        printf("left_distance %f\n",left_distance);
-        printf("right_distance %f\n",right_distance);
-
         #ifdef DEBUG
             sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
             write_log(msg);
         #endif
         
-        
-        motor_ctrl(RIGHT, FORWARD, 100);
+        motor_ctrl(RIGHT, way, 100);
         
         while(1){
             
-            int flag = 0;
-            
-            #ifdef DEBU
+            #ifdef DEBUG
                 sprintf(msg,"DEBUG: pos[0]:%d, pos[1]:%d",pos[0],pos[1]);
                 write_log(msg);
             #endif
@@ -281,16 +272,48 @@ void qe_cir(uint8_t side, uint16_t angle, uint16_t r){
             }
             
             if(abs(pos[1])/right_distance < abs(pos[0])/left_distance){
-                motor_ctrl(LEFT, FORWARD, 0);
+                motor_ctrl(LEFT, way, 0);
             }
             else{
-                motor_ctrl(LEFT, FORWARD, 100);
+                motor_ctrl(LEFT, way, 100);
             }
         }
         
-        motor_stop();
+    }
+    else if(side == RIGHT){
+        left_distance = 2*3.14 * (r+120) * angle/ 360;
+        right_distance = 2*3.14 * (r-120) * angle/ 360;
+        
+        #ifdef DEBUG
+            sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
+            write_log(msg);
+        #endif
+        
+        motor_ctrl(LEFT, way, 100);
+        
+        while(1){
+            
+            #ifdef DEBUG
+                sprintf(msg,"DEBUG: pos[0]:%d, pos[1]:%d",pos[0],pos[1]);
+                write_log(msg);
+            #endif
+            
+            if(abs(pos[0]) > abs(left_distance*pdrel[0])){
+                break;
+            }
+            
+            if(abs(pos[1])/right_distance > abs(pos[0])/left_distance){
+                motor_ctrl(RIGHT, way, 0);
+            }
+            else{
+                motor_ctrl(RIGHT, way, 100);
+            }
+        }
+        
         
     }
+    
+    motor_stop();
     
     return;
 }
