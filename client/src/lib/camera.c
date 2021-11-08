@@ -24,7 +24,9 @@ bool camera_mutex;
 unsigned char CAMERA_PP;//ping pong flag
 cv::Mat IMAGE[2];
 cv::Mat tem_image[2];
-
+int blocksize;
+int constsub;
+int to_bin_mode;
 
 static int8_t ordr = 0;//Output ReDiRect flag
 
@@ -35,6 +37,10 @@ void cam_ordr(int input){//camera result Output ReDiRect
 
 
 void camera_init(){
+
+    to_bin_mode = 0;
+    blocksize = 15;
+    constsub = 0;
 	
 	//set camera params
 	Camera.set( CV_CAP_PROP_FORMAT, CV_8UC1 );
@@ -60,6 +66,21 @@ void camera_init(){
 	return;
 }
 
+
+void set_blocksize(int input){
+    blocksize = input;
+    return;
+}
+
+void set_constsub(int input){
+    constsub = input;
+    return;
+}
+
+void set_to_bin_mode(int input){
+    to_bin_mode = input;
+    return;
+}
 
 void* camera_exec(void *){
 	
@@ -105,13 +126,20 @@ void* camera_exec(void *){
 				//No break here, continue to TO_IPC
 			case TO_IPC:
 				Camera.retrieve(tem_image[CAMERA_PP]);
-				cv::adaptiveThreshold(tem_image[CAMERA_PP],IMAGE[CAMERA_PP],255,cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 25, 0);
-				break;
+                switch(to_bin_mode){
+                    case MEAN:
+                        cv::adaptiveThreshold(tem_image[CAMERA_PP],IMAGE[CAMERA_PP],255,cv::ADAPTIVE_THRESH_MEAN_C,
+                                cv::THRESH_BINARY, blocksize, constsub);
+                        break;
+                    case GAUSSIAN:
+                        cv::adaptiveThreshold(tem_image[CAMERA_PP],IMAGE[CAMERA_PP],255,cv::ADAPTIVE_THRESH_GAUSSIAN_C,
+                                cv::THRESH_BINARY, blocksize, constsub);
+                        break;
+                }
+                break;
 		}
 		CAMERA_PP ^= 1;
-		
 	}
-	
 	pthread_exit(0);
 }
 
@@ -120,7 +148,4 @@ void camera_release(){
 	Camera.release();//show time statistics
 	return;
 }
-
-
-
 

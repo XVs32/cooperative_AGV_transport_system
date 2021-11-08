@@ -58,17 +58,35 @@ int qr_turn(int target_angle){
     
     int count = 10;
     while(count){
+
+        set_blocksize(21);
+        set_constsub(5);
+        set_to_bin_mode(GAUSSIAN);
         qr_code cur_qr = get_qr_angle();//current qr code angle
+
+        while(cur_qr.angle == 500){
         
+            int i,j,k;
+            for(i=0;i<2;i++){
+                set_to_bin_mode(i);//0 is MEAN, 1 is GAUSSIAN
+                for(j=11;j<28;j+=4){
+                    set_blocksize(j);
+                    for(k=0;k<j/2;k++){
+                        set_constsub(k);
+                        cur_qr = get_qr_angle();//current qr code angle
+                        if(cur_qr.angle != 500){//break all three for loop
+                            i = 0xff;
+                            j = 0xff;
+                            k = 0xff;
+                        }
+                    }
+                }
+            }
+        }
+
         if(cur_qr.angle == 500){
-            motor_ctrl(LEFT, BACKWARD, 100);
-            motor_ctrl(RIGHT, FORWARD, 100);
-            usleep(20000);
-            motor_ctrl(LEFT, FORWARD, 100);
-            motor_ctrl(RIGHT, BACKWARD, 100);
-            usleep(20000);
-            motor_stop();
-            continue;
+            write_log("Cannot find the QR code");
+            exit(1);
         }
         
         int diff = get_angle_diff(cur_qr.angle,target_angle);
@@ -227,6 +245,10 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
     motor_ctrl(RIGHT, FORWARD, 100);
 
     qr_code cur_qr;
+
+    set_to_bin_mode(GAUSSIAN);
+    set_blocksize(21);
+    set_constsub(5);
     
     while(1){
         cur_qr = get_qr_angle();//current qr code angle

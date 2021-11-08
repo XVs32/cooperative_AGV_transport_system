@@ -71,14 +71,22 @@ void motor_pwm(int left, int right){
 
 void motor_stop(){
     
-    motor_pwm(0,0);
-
-    digitalWrite (LEFT_FORWARD, LOW) ;
-    digitalWrite (RIGHT_FORWARD, LOW) ;
-
+    digitalWrite (LEFT_FORWARD, HIGH) ;
+    digitalWrite (RIGHT_FORWARD, HIGH) ;
     digitalWrite (LEFT_BACKWARD, LOW) ;
     digitalWrite (RIGHT_BACKWARD, LOW) ;
 
+    digitalWrite (LEFT_FORWARD, LOW) ;
+    digitalWrite (RIGHT_FORWARD, LOW) ;
+    digitalWrite (LEFT_BACKWARD, HIGH) ;
+    digitalWrite (RIGHT_BACKWARD, HIGH) ;
+
+    motor_pwm(0,0);
+    digitalWrite (LEFT_BACKWARD, LOW) ;
+    digitalWrite (RIGHT_BACKWARD, LOW) ;
+    digitalWrite (LEFT_FORWARD, LOW) ;
+    digitalWrite (RIGHT_FORWARD, LOW) ;
+    return;
 };
 
 void pin_init(){
