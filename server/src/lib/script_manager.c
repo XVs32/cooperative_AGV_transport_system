@@ -121,21 +121,24 @@ double get_central_angle(int x, int y){
 double get_tangent_angle(int x, int y){
     double central_angle = get_central_angle(x,y);
     //printf("DEBUG: include_angle = %lf\n", include_angle);
-    if(central_angle < 90){
-        return -central_angle;
-    }
-    else if(central_angle < 180){
-        return 90 - (central_angle - 90);
-    }
-    else if(central_angle < 270){
-        return -(central_angle - 180);
-    }
-    else if(central_angle < 360){
-        return 90 - (central_angle - 270);
-    }
-    else{
-        printf("Error: undefined tangent angle.");
-        exit(-1);
+
+    switch(x){
+        case -1:
+            return 180-central_angle;
+        case 0:
+            if(y>0){
+                return -90;
+            }
+            else{
+                return 90;
+            }
+        case 1:
+            if(y>=0){
+                return -central_angle;
+            }
+            else{
+                return 360-central_angle;
+            }
     }
 }
 
