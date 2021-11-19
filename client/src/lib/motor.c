@@ -61,7 +61,7 @@ void motor_ctrl(int side, int way, int speed){
     if(speed == 0){
         digitalWrite(gpio_hi, LOW);
         digitalWrite(gpio_lo, LOW);
-        return
+        return;
     }
     else{
         digitalWrite(gpio_hi, HIGH);
