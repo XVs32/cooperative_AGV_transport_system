@@ -158,10 +158,10 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 		write_log("Debug: start moscorr count down");
 	#endif
 	
-	motor_ctrl(LEFT, FORWARD, 100);
-	motor_ctrl(RIGHT, BACKWARD, 100);
+	motor_ctrl(RIGHT, FORWARD, 100);
+	motor_ctrl(LEFT, BACKWARD, 100);
 	
-	while(abs(pos[0])<50000){
+	while(abs(pos[0])<40000){
 		#ifdef DEBUG
 			sprintf(msg,"Debug: left motor sum = %d",pos[0]);
 			write_log(msg);
@@ -187,9 +187,8 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 		exit(1);
 	}
 
-	float total_sum = abs(pos[0]) + abs(pos[1]);
-	parel[0] = total_sum / (float)(diff*2);
-	parel[1] = parel[0];
+	parel[0] = abs(pos[0]) / (float)(diff);
+	parel[1] = abs(pos[1]) / (float)(diff);
 	
 	pdrel[0] = (float)abs(pos[0]) / (float)(((2*PI*120)/360)*diff); //r = 120
 	pdrel[1] = (float)abs(pos[1]) / (float)(((2*PI*120)/360)*diff); //r = 120

@@ -49,6 +49,8 @@ int timer_turn(int target_angle){
 }
 
 int qr_turn(int target_angle){
+
+    target_angle = ANGLE_MINUS(target_angle,2);
     
     char msg[50];
     #ifdef DEBUG
@@ -141,10 +143,10 @@ int qe_turn(int target_angle){
     motor_stop();
     pos_reset();
     
-    #ifdef DEBUG
+    //#ifdef DEBUG
         sprintf(msg,"Debug: start turning %d with qe",target_angle);
         write_log(msg);
-    #endif
+    //#endif
     
     if(target_angle<0){
         motor_ctrl(LEFT, BACKWARD, 100);
@@ -156,11 +158,10 @@ int qe_turn(int target_angle){
     }
     
     
-    int tem;
-    while(abs(pos[0])<abs(target_angle)*parel[0]){
+    while(abs(pos[0])<abs(target_angle*parel[1])){
         
         #ifdef DEBUG
-            sprintf(msg,"Debug: waiting qe, pos[0] = %d",pos[0]);
+            sprintf(msg,"Debug: waiting qe, pos[0] = %d",pos[1]);
             write_log(msg);
         #endif
     }

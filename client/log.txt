@@ -1,0 +1,37 @@
+Debug: start turning -30 with qe	|Time:Fri Nov 19 16:02:08 2021
+Debug: start turning -30 with qe	|Time:Fri Nov 19 16:02:09 2021
+Debug: start turning -30 with qe	|Time:Fri Nov 19 16:02:11 2021
+Debug: start turning -30 with qe	|Time:Fri Nov 19 16:02:12 2021
+Debug: start turning -30 with qe	|Time:Fri Nov 19 16:02:14 2021
+Debug: start turning -26 with qe	|Time:Fri Nov 19 16:02:15 2021
+Info: start moscorr distance:250 	|Time:Fri Nov 19 16:02:20 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:02:31 2021
+Debug: distance walked: 470.055145	|Time:Fri Nov 19 16:02:32 2021
+Info: mouse_78325 is left mouse	|Time:Fri Nov 19 16:02:32 2021
+Info: mouse_-91989 is right mouse	|Time:Fri Nov 19 16:02:32 2021
+Info: const angle of mouse_0: -424.578949	|Time:Fri Nov 19 16:02:32 2021
+Info: const distance of mouse_0: 166.629379	|Time:Fri Nov 19 16:02:32 2021
+Info: const angle of mouse_1: -416.284210	|Time:Fri Nov 19 16:02:32 2021
+Info: const distance of mouse_1: 195.698318	|Time:Fri Nov 19 16:02:32 2021
+Info: start go_mos distance:9 	|Time:Fri Nov 19 16:02:33 2021
+Debug: start turning 30 with qe	|Time:Fri Nov 19 16:02:33 2021
+Info: start go_mos distance:6 	|Time:Fri Nov 19 16:02:35 2021
+Debug: start turning 30 with qe	|Time:Fri Nov 19 16:02:35 2021
+Debug: start turning 22 with qe	|Time:Fri Nov 19 16:02:37 2021
+Info: start go_mos distance:300 	|Time:Fri Nov 19 16:02:41 2021
+Info: start to_qr	|Time:Fri Nov 19 16:02:50 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:02:53 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:02:58 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:03:01 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:03:04 2021
+Info: start go_mos distance:10 	|Time:Fri Nov 19 16:03:06 2021
+Info: start go_mos distance:3 	|Time:Fri Nov 19 16:03:06 2021
+Info: start go_mos distance:200 	|Time:Fri Nov 19 16:03:11 2021
+Debug: start turning -90 with qe	|Time:Fri Nov 19 16:03:15 2021
+Debug: start turning 90 with qe	|Time:Fri Nov 19 16:03:32 2021
+Info: start to_qr	|Time:Fri Nov 19 16:03:37 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:03:40 2021
+Error: cannot find a QR code, exit	|Time:Fri Nov 19 16:03:43 2021
+Info: start go_mos distance:11 	|Time:Fri Nov 19 16:03:44 2021
+Info: start go_mos distance:3 	|Time:Fri Nov 19 16:03:44 2021
+Info: start go_mos distance:200 	|Time:Fri Nov 19 16:03:48 2021
