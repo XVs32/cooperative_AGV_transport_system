@@ -29,8 +29,8 @@
 #define RIGHT_PRASE_A 3
 #define RIGHT_PRASE_B 4
 
-float parel[2];//pixel_angle_relation for mouse
-float pdrel[2];//pixel_distance_relation for mouse
+float ptoa[2][2];//pulse to angle
+float ptod[2][2];//pulse to distance
 
 volatile long pos[2];
 
@@ -151,15 +151,14 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 	motor_stop();
 	pos_reset();
 	sleep(1);
-
 	qr_code init_qr = get_qr_angle();
 	
 	#ifdef DEBUG
 		write_log("Debug: start moscorr count down");
 	#endif
 	
-	motor_ctrl(RIGHT, FORWARD, 100);
-	motor_ctrl(LEFT, BACKWARD, 100);
+	motor_ctrl(LEFT, FORWARD, 100);
+	motor_ctrl(RIGHT, BACKWARD, 100);
 	
 	while(abs(pos[0])<40000){
 		#ifdef DEBUG
@@ -172,12 +171,12 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 	
 	motor_stop();
 	
-	sleep(1);
 	
 	#ifdef DEBUG
 		write_log("Debug: end moscorr count down");
 	#endif
 
+	sleep(1);
 	qr_code cur_qr = get_qr_angle();//current qr code angle
 
 	int diff = get_angle_diff(init_qr.angle,cur_qr.angle);
@@ -187,15 +186,58 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 		exit(1);
 	}
 
-	parel[0] = abs(pos[0]) / (float)(diff);
-	parel[1] = abs(pos[1]) / (float)(diff);
+	ptoa[0][LEFT] = abs(pos[0]) / (float)(diff);
+	ptoa[1][RIGHT] = abs(pos[1]) / (float)(diff);
 	
-	pdrel[0] = (float)abs(pos[0]) / (float)(((2*PI*120)/360)*diff); //r = 120
-	pdrel[1] = (float)abs(pos[1]) / (float)(((2*PI*120)/360)*diff); //r = 120
+	ptod[0][LEFT] = (float)abs(pos[0]) / (float)(((2*PI*120)/360)*diff); //r = 120
+	ptod[1][RIGHT] = (float)abs(pos[1]) / (float)(((2*PI*120)/360)*diff); //r = 120
+
+
+	pos_reset();
+	sleep(1);
+	init_qr = get_qr_angle();
 	
-    sleep(1);
+	motor_ctrl(LEFT, BACKWARD, 100);
+	motor_ctrl(RIGHT, FORWARD, 100);
+
+	while(abs(pos[0])<40000){
+		#ifdef DEBUG
+			sprintf(msg,"Debug: left motor sum = %d",pos[0]);
+			write_log(msg);
+			sprintf(msg,"Debug: right motor sum = %d",pos[1]);
+			write_log(msg);
+		#endif
+	}
 	
+	motor_stop();
+
+	#ifdef DEBUG
+		write_log("Debug: end moscorr count down");
+	#endif
+
+	sleep(1);
+    cur_qr = get_qr_angle();//current qr code angle
+
+	diff = get_angle_diff(init_qr.angle,cur_qr.angle);
+
+	if(diff == 0){
+		write_log("Error: cannot div by 0, where diff = 0. exit");
+		exit(1);
+	}
+
+	ptoa[1][LEFT] = abs(pos[0]) / (float)(diff);
+	ptoa[0][RIGHT] = abs(pos[1]) / (float)(diff);
+	
+	ptod[1][LEFT] = (float)abs(pos[0]) / (float)(((2*PI*120)/360)*diff); //r = 120
+	ptod[0][RIGHT] = (float)abs(pos[1]) / (float)(((2*PI*120)/360)*diff); //r = 120
+
+
+//////////////////////////////////////////////////////////
+
 	qr_turn(270);
+
+/////////////////////////////////////////////////////////
+	sleep(1);
 	qr_code start_qr = get_qr_angle();//current qr code angle
 	
 	int distance = 250;
@@ -208,15 +250,14 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 	pos_reset();
 	motor_ctrl(LEFT, FORWARD, 100);
 	motor_ctrl(RIGHT, FORWARD, 100);
-	while(abs(pos[0])<abs(distance*pdrel[0])){
-		
+
+	while(abs(pos[RIGHT])<abs(distance*ptod[0][RIGHT])){
 		#ifdef DEBUG
 			sprintf(msg,"Debug: waiting mouse, pos[0] = %d",pos[0]);
 			write_log(msg);
 			sprintf(msg,"Debug: waiting mouse, pos[1] = %d",pos[1]);
 			write_log(msg);
 		#endif
-		
 	}
 	
 	#ifdef DEBUG
@@ -250,23 +291,33 @@ void qe_corr(){//mouse correction //MUST run after camera_init()
 	sprintf(msg,"Debug: distance walked: %f",walked);
 	write_log(msg);
 	
-	pdrel[0] = (float)abs(pos[0]) / walked;
-	pdrel[1] = (float)abs(pos[1]) / walked;
 	
-	sprintf(msg,"Info: mouse_%d is left mouse",pos[0]);
+	sprintf(msg,"Info: pulse to forward angle of left motor: %f",ptoa[0][LEFT]);
 	write_log(msg);
-	sprintf(msg,"Info: mouse_%d is right mouse",pos[1]);
-	write_log(msg);	
-	
-	sprintf(msg,"Info: const angle of mouse_0: %f",parel[0]);
+	sprintf(msg,"Info: pulse to forward angle of right motor: %f",ptoa[0][RIGHT]);
 	write_log(msg);
-	sprintf(msg,"Info: const distance of mouse_0: %f",pdrel[0]);
+	sprintf(msg,"Info: pulse to back angle of left motor: %f",ptoa[1][LEFT]);
 	write_log(msg);
-	sprintf(msg,"Info: const angle of mouse_1: %f",parel[1]);
-	write_log(msg);
-	sprintf(msg,"Info: const distance of mouse_1: %f",pdrel[1]);
+	sprintf(msg,"Info: pulse to back angle of right motor: %f",ptoa[1][RIGHT]);
 	write_log(msg);
 	
+	sprintf(msg,"Info: pulse to forward distance of left motor: %f",ptod[0][LEFT]);
+	write_log(msg);
+	sprintf(msg,"Info: pulse to forward distance of right motor: %f",ptod[0][RIGHT]);
+	write_log(msg);
+	sprintf(msg,"Info: pulse to back distance of left motor: %f",ptod[1][LEFT]);
+	write_log(msg);
+	sprintf(msg,"Info: pulse to back distance of right motor: %f",ptod[1][RIGHT]);
+	write_log(msg);
+    
+    ptod[0][LEFT] = (float)abs(pos[0]) / walked;
+	ptod[0][RIGHT] = (float)abs(pos[1]) / walked;
+	
+	sprintf(msg,"Info: pulse to forward distance of left motor: %f",ptod[0][LEFT]);
+	write_log(msg);
+	sprintf(msg,"Info: pulse to forward distance of right motor: %f",ptod[0][RIGHT]);
+	write_log(msg);
+
 	return;
 }
 
