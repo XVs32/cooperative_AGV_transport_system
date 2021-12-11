@@ -245,19 +245,32 @@ int to_qr(uint32_t id, uint16_t end_angle, uint16_t next_distance){
     motor_ctrl(LEFT, FORWARD, 100);
     motor_ctrl(RIGHT, FORWARD, 100);
 
-    qr_code cur_qr;
-
-    set_to_bin_mode(GAUSSIAN);
     set_blocksize(21);
     set_constsub(5);
+    set_to_bin_mode(GAUSSIAN);
+    qr_code cur_qr = get_qr_angle();//current qr code angle
+
+    while(cur_qr.angle == 500 || cur_qr.id != id){
     
-    while(1){
-        cur_qr = get_qr_angle();//current qr code angle
-        if(cur_qr.angle != 500 && cur_qr.id == id){
-            motor_stop();
-            break;
+        int i,j,k;
+        for(i=0;i<2;i++){
+            set_to_bin_mode(i);//0 is MEAN, 1 is GAUSSIAN
+            for(j=11;j<28;j+=4){
+                set_blocksize(j);
+                for(k=0;k<j/2;k++){
+                    set_constsub(k);
+                    cur_qr = get_qr_angle();//current qr code angle
+                    if(cur_qr.angle != 500 && cur_qr.id == id){//break all three for loop
+                        i = 0xff;
+                        j = 0xff;
+                        k = 0xff;
+                    }
+                }
+            }
         }
     }
+
+    motor_stop();
     
     qr_turn(ANGLE_MINUS(end_angle ,(int)(atan2( (cur_qr.x - 160) *0.3 ,next_distance) * (180/3.1416))));
     
