@@ -190,10 +190,11 @@ y_pos_tracker get_on_fly_pos(ws_n **ws_map, uint32_t center_checkp, uint16_t ang
     }
     else{
         while(ret.dist >= 0){
-            tem_n = get_navigation(ws_map[ret.id],(angle - angle_bias[ret.id] + 360) % 360, BY_ANGLE);
+            int tem_angle = (angle - angle_bias[ret.id] + 360) % 360;
+            tem_n = get_navigation(ws_map[ret.id], tem_angle, BY_ANGLE);
             if(tem_n == NULL){
                 printf("Error: cannot find the next node, seem like the team has exceed the workspace border, exit.\n");
-                printf("Debug: angle= %d, angle_bias[ret.id]= %d\n", angle, angle_bias[ret.id]);
+                printf("Debug: ret.id=%d angle= %d, angle_bias[ret.id]= %d\n", ret.id, angle, angle_bias[ret.id]);
                 exit(1);
             }
             ret.dist -= tem_n->dist;
@@ -209,14 +210,15 @@ y_pos_tracker get_on_fly_pos(ws_n **ws_map, uint32_t center_checkp, uint16_t ang
 command_node* get_command(int team_id, int agv_id, const char *ws_file_path, const char *task_file_path){
 ///////////////////////////////////init start///////////////////////////////////////
     ws_n **ws_map = get_ws_config(WS_CONFIG); //remember to free memory
+
     short *bias_angle = get_bias_angle(WS_CONFIG); //remember to free memory
     uint32_t *path = get_path(AGV_CONFIG, team_id); //remember to free memory
     ws_n *checkp_n = get_navigation(ws_map[path[0]], path[1], BY_NODE);//next check point
-    checkp_n->angle = RTOA(checkp_n->angle, bias_angle[path[0]]);//abs angle
+    int next_angle = RTOA(checkp_n->angle, bias_angle[path[0]]);//abs angle
     ws_n *checkp_c; //current CENTER checkp, use dist as bias if agv leave the checkp already
     checkp_c = malloc(sizeof(ws_n));
     checkp_c->id = path[0];
-    checkp_c->angle = checkp_n->angle;//abs angle
+    checkp_c->angle = next_angle;//abs angle
     checkp_c->dist = 0;
     checkp_c->next = NULL;//not gonna use this
     
@@ -251,26 +253,29 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
         }*/
 
         checkp_n = get_navigation(ws_map[path[i]], path[i+1], BY_NODE);//next check point
-        checkp_n->angle = RTOA(checkp_n->angle, bias_angle[path[i]]);//abs angle
+        if(checkp_n == NULL){
+            printf("Error: Cannot find the next check point from %d, check your config.\n",path[i]);
+        }
 
+        next_angle = RTOA(checkp_n->angle, bias_angle[path[i]]);//abs angle
         checkp_c->dist = checkp_n->dist;
 
         
         //printf("checkp_c->angle = %d, checkp_n->angle = %d\n",checkp_c->angle , checkp_n->angle);
-        if(checkp_c->angle != checkp_n->angle){
+        if(checkp_c->angle != next_angle){
             //team turn is needed
             u_int8_t is_center = !(agv_pos[agv_id].x | agv_pos[agv_id].y);//0 = false, not 0 = true
             printf("is_center = %d\n",is_center);
             if(is_center){
                 new_command = malloc(sizeof(command_node));
-                new_command->val = command_ecode(0, QR_TURN, ATOR(checkp_n->angle, bias_angle[checkp_c->id]));
+                new_command->val = command_ecode(0, QR_TURN, ATOR(next_angle, bias_angle[checkp_c->id]));
                 new_command->sync = 3;//wait for 3 sync, means sync after others finish 3 commands.
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                printf("turn_qr(%d)\n", ATOR(checkp_n->angle, bias_angle[checkp_c->id]));
+                printf("turn_qr(%d)\n", ATOR(next_angle, bias_angle[checkp_c->id]));
             }
             else{
-                
-                int tangent_angle = get_tangent_angle(agv_pos[agv_id].x, agv_pos[agv_id].y) + 0.5;
+                double tmp = get_tangent_angle(agv_pos[agv_id].x, agv_pos[agv_id].y);
+                int tangent_angle = tmp + (tmp/fabs(tmp))*0.5;
                 //get_tangent_angle return double
                 //+0.5 for rounding
                 
@@ -280,7 +285,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("qe_turn(%d)\n", tangent_angle);
                 
-                int32_t turn_angle = get_angle_diff(checkp_c->angle, checkp_n->angle);
+                int32_t turn_angle = get_angle_diff(checkp_c->angle, next_angle);
                 int8_t side; //0 for LEFT, 1 for RIGHT
                 
                 if(agv_pos[agv_id].x<0){
@@ -317,7 +322,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("qe_turn(%d)\n", -tangent_angle);
             }
-            checkp_c->angle = checkp_n->angle;
+            checkp_c->angle = next_angle;
 
             int j;
             for(j=0;j<=agv_count;j++){
@@ -325,7 +330,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
             }
         }
 
-        if(checkp_c->angle == checkp_n->angle){//this if condition is always ture, delete this in production environment
+        if(checkp_c->angle == next_angle){//this if condition is always ture, delete this in production environment
             //go stright line
 
             int y_bias = 0;
@@ -389,6 +394,7 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
         }
 
         
+                            printf("NEXT\n");
     }
     return ret;
 }

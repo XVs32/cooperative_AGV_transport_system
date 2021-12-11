@@ -47,7 +47,6 @@ ws_n** get_ws_config(const char *file_path) {//get workspace config
     }
     
     cJSON_Delete(root);
-
     
     for(i=0;i<checkp_count;i++){
         ws_n *it;
@@ -73,6 +72,7 @@ short* get_bias_angle(const char *file_path){
     cJSON *checkp_b = cJSON_GetObjectItem(root, "checkpoint_bias_angle");
     int checkp_b_size = cJSON_GetArraySize(checkp_b);
     
+
     short *ret = malloc(sizeof(short)*(checkp_b_size+1));
     
     int i;
