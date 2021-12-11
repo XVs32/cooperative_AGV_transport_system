@@ -281,8 +281,8 @@ void qe_cir(uint8_t side, int16_t angle, uint16_t r){
     if(side == LEFT){
         left_distance = 2*3.14 * (r-120) * angle/ 360;
         right_distance = 2*3.14 * (r+120) * angle/ 360;
-        left_distance = abs(left_distance);
-        right_distance = abs(right_distance);
+        left_distance = abs(left_distance*ptod[abs(way)][LEFT]);
+        right_distance = abs(right_distance*ptod[abs(way)][RIGHT]);
 
         #ifdef DEBUG
             sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
@@ -298,7 +298,7 @@ void qe_cir(uint8_t side, int16_t angle, uint16_t r){
                 write_log(msg);
             #endif
             
-            if(abs(pos[RIGHT]) > abs(right_distance*ptod[0][RIGHT])){
+            if(abs(pos[RIGHT]) > abs(right_distance)){
                 break;
             }
             
@@ -314,8 +314,8 @@ void qe_cir(uint8_t side, int16_t angle, uint16_t r){
     else if(side == RIGHT){
         left_distance = 2*3.14 * (r+120) * angle/ 360;
         right_distance = 2*3.14 * (r-120) * angle/ 360;
-        left_distance = abs(left_distance);
-        right_distance = abs(right_distance);
+        left_distance = abs(left_distance*ptod[abs(way)][LEFT]);
+        right_distance = abs(right_distance*ptod[abs(way)][RIGHT]);
         
         #ifdef DEBUG
             sprintf(msg,"DEBUG: left_distance:%d, right_distance:%d",left_distance,right_distance);
@@ -331,7 +331,7 @@ void qe_cir(uint8_t side, int16_t angle, uint16_t r){
                 write_log(msg);
             #endif
             
-            if(abs(pos[LEFT]) > abs(left_distance*ptod[0][LEFT])){
+            if(abs(pos[LEFT]) > abs(left_distance)){
                 break;
             }
             

@@ -35,6 +35,7 @@ extern int camera_ipc;
 extern int command_ipc;
 
 int main (){
+
 	
 	log_init();
 	timer_init();
@@ -70,13 +71,21 @@ int main (){
 	
 	qe_corr();
 	sleep(1);
-	qr_turn(0);
-    qe_go(300);
+	//qr_turn(270);
+	qr_turn(90);
+	sleep(1);
+    to_qr(16,90,500);
+
+    //qe_go(300);
 	sleep(1);
 
 	/*printf("qecir start\n");
 	qe_cir(LEFT,180,250);
 	printf("qecir done\n");*/
+	
+	printf("Waiting\n");
+    int block;
+    scanf("%d",&block);
 	
     tcp_init();//agv ready to go from now on
 	printf("agv ready to go from now on\n");
