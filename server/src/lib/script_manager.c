@@ -265,11 +265,18 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
         if(checkp_c->angle != next_angle){
             //team turn is needed
             u_int8_t is_center = !(agv_pos[agv_id].x | agv_pos[agv_id].y);//0 = false, not 0 = true
+            int32_t turn_angle = get_angle_diff(checkp_c->angle, checkp_n->angle);
             printf("is_center = %d\n",is_center);
             if(is_center){
                 new_command = malloc(sizeof(command_node));
+<<<<<<< HEAD
                 new_command->val = command_ecode(0, QR_TURN, ATOR(next_angle, bias_angle[checkp_c->id]));
                 new_command->sync = 3;//wait for 3 sync, means sync after others finish 3 commands.
+=======
+                new_command->val = command_ecode(0, QR_TURN, ATOR(checkp_n->angle, bias_angle[checkp_c->id]));
+                //new_command->sync = 3;//wait for 3 sync, means sync after others finish 3 commands.
+                new_command->sync = 2 + abs(turn_angle);//wait for 3 sync, means sync after others finish 3 commands.
+>>>>>>> 29c86100a5761646adf981c1f208a8f9e21d95dc
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("turn_qr(%d)\n", ATOR(next_angle, bias_angle[checkp_c->id]));
             }
@@ -285,7 +292,11 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 ret = command_add_to_ll(ret, new_command, TO_TAIL);
                 printf("qe_turn(%d)\n", tangent_angle);
                 
+<<<<<<< HEAD
                 int32_t turn_angle = get_angle_diff(checkp_c->angle, next_angle);
+=======
+                
+>>>>>>> 29c86100a5761646adf981c1f208a8f9e21d95dc
                 int8_t side; //0 for LEFT, 1 for RIGHT
                 
                 if(agv_pos[agv_id].x<0){
@@ -301,20 +312,24 @@ command_node* get_command(int team_id, int agv_id, const char *ws_file_path, con
                 }
                 
                 int r = sqrt(pow(500*agv_pos[agv_id].x, 2) + pow(agv_pos[agv_id].y, 2));
-                uint16_t command_value = 0;
-                command_value += side << 9;
-                command_value += (turn_angle*inverter) & 0x01ff;
                 
-                new_command = malloc(sizeof(command_node));
-                new_command->val = command_ecode(0, MOS_CIR, command_value);
-                new_command->sync = 0; //don't wait for sync
-                ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                
-                new_command = malloc(sizeof(command_node));
-                new_command->val = command_ecode(1, MOS_CIR, r & 0x03ff);
-                new_command->sync = 1; //wait for sync
-                ret = command_add_to_ll(ret, new_command, TO_TAIL);
-                printf("qe_cir(%d, %d, %d)\n", side, turn_angle*inverter, r);
+                int j;
+                for(j=0;j<abs(turn_angle);j++){
+                    uint16_t command_value = 0;
+                    command_value += side << 9;
+                    command_value += (1*inverter) & 0x01ff;
+
+                    new_command = malloc(sizeof(command_node));
+                    new_command->val = command_ecode(0, MOS_CIR, command_value);
+                    new_command->sync = 0; //don't wait for sync
+                    ret = command_add_to_ll(ret, new_command, TO_TAIL);
+
+                    new_command = malloc(sizeof(command_node));
+                    new_command->val = command_ecode(1, MOS_CIR, r & 0x03ff);
+                    new_command->sync = 1; //wait for sync
+                    ret = command_add_to_ll(ret, new_command, TO_TAIL);
+                    printf("qe_cir(%d, %d, %d)\n", side, 1*inverter, r);
+                }
                 
                 new_command = malloc(sizeof(command_node));
                 new_command->val = command_ecode(0, MOS_TURN, -tangent_angle);

@@ -1,56 +1,35 @@
-Info: start moscorr distance:250 	|Time:Sun Nov  7 07:00:49 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:00:58 2021
-Debug: distance walked: 477.504608	|Time:Sun Nov  7 07:01:00 2021
-Info: mouse_97171 is left mouse	|Time:Sun Nov  7 07:01:00 2021
-Info: mouse_-97447 is right mouse	|Time:Sun Nov  7 07:01:00 2021
-Info: const angle of mouse_0: 427.363647	|Time:Sun Nov  7 07:01:00 2021
-Info: const distance of mouse_0: 203.497513	|Time:Sun Nov  7 07:01:00 2021
-Info: const angle of mouse_1: 427.363647	|Time:Sun Nov  7 07:01:00 2021
-Info: const distance of mouse_1: 204.075516	|Time:Sun Nov  7 07:01:00 2021
-Info: start go_mos distance:7 	|Time:Sun Nov  7 07:01:01 2021
-Info: start to_qr	|Time:Sun Nov  7 07:01:09 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:01:12 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:01:16 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:01:19 2021
-Info: start go_mos distance:6 	|Time:Sun Nov  7 07:01:20 2021
-Info: start go_mos distance:-3 	|Time:Sun Nov  7 07:01:24 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:01:31 2021
-Info: start to_qr	|Time:Sun Nov  7 07:01:34 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:01:37 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:01:40 2021
-Info: start go_mos distance:11 	|Time:Sun Nov  7 07:01:43 2021
-Info: start go_mos distance:3 	|Time:Sun Nov  7 07:01:43 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:01:46 2021
-Info: start to_qr	|Time:Sun Nov  7 07:02:13 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:02:16 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:02:19 2021
-Info: start go_mos distance:10 	|Time:Sun Nov  7 07:02:22 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:02:25 2021
-Info: start to_qr	|Time:Sun Nov  7 07:02:27 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:02:30 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:02:33 2021
-Info: start go_mos distance:9 	|Time:Sun Nov  7 07:02:36 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:02:39 2021
-Info: start to_qr	|Time:Sun Nov  7 07:03:05 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:03:08 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:03:11 2021
-Info: start go_mos distance:11 	|Time:Sun Nov  7 07:03:14 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:03:17 2021
-Info: start to_qr	|Time:Sun Nov  7 07:03:44 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:03:47 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:03:50 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:03:56 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:03:59 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:04:02 2021
-Info: start go_mos distance:8 	|Time:Sun Nov  7 07:04:04 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:04:07 2021
-Info: start to_qr	|Time:Sun Nov  7 07:04:09 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:04:12 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:04:15 2021
-Info: start go_mos distance:7 	|Time:Sun Nov  7 07:04:18 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:04:21 2021
-Info: start to_qr	|Time:Sun Nov  7 07:04:47 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:04:50 2021
-Error: cannot find a QR code, exit	|Time:Sun Nov  7 07:04:53 2021
-Info: start go_mos distance:11 	|Time:Sun Nov  7 07:04:56 2021
-Info: start go_mos distance:100 	|Time:Sun Nov  7 07:05:00 2021
+Info: start go_mos distance:7 	|Time:Sat Nov 20 09:56:30 2021
+Debug: start turning 28 with qe	|Time:Sat Nov 20 09:56:30 2021
+Info: start go_mos distance:3 	|Time:Sat Nov 20 09:56:32 2021
+Info: start moscorr distance:250 	|Time:Sat Nov 20 09:56:38 2021
+Error: cannot find a QR code, exit	|Time:Sat Nov 20 09:56:47 2021
+Debug: distance walked: 482.211304	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to forward angle of left motor: 424.684204	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to forward angle of right motor: -427.423920	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to back angle of left motor: -438.565216	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to back angle of right motor: 422.884216	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to forward distance of left motor: 202.771774	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to forward distance of right motor: -204.079880	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to back distance of left motor: -209.399460	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to back distance of right motor: 201.912338	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to forward distance of left motor: 200.791641	|Time:Sat Nov 20 09:56:50 2021
+Info: pulse to forward distance of right motor: 198.072922	|Time:Sat Nov 20 09:56:50 2021
+Info: start go_mos distance:6 	|Time:Sat Nov 20 09:56:51 2021
+Debug: start turning 30 with qe	|Time:Sat Nov 20 09:56:51 2021
+Info: start go_mos distance:-3 	|Time:Sat Nov 20 09:56:53 2021
+Debug: start turning 30 with qe	|Time:Sat Nov 20 09:56:53 2021
+Info: start go_mos distance:-6 	|Time:Sat Nov 20 09:56:54 2021
+Debug: start turning 23 with qe	|Time:Sat Nov 20 09:56:54 2021
+Info: start go_mos distance:-5 	|Time:Sat Nov 20 09:56:56 2021
+Info: start go_mos distance:-5 	|Time:Sat Nov 20 09:56:56 2021
+Info: start go_mos distance:300 	|Time:Sat Nov 20 09:56:59 2021
+Info: start to_qr	|Time:Sat Nov 20 09:57:08 2021
+Error: cannot find a QR code, exit	|Time:Sat Nov 20 09:57:11 2021
+Debug: start turning -11 with qe	|Time:Sat Nov 20 09:57:13 2021
+Info: start go_mos distance:300 	|Time:Sat Nov 20 09:57:16 2021
+Debug: start turning 90 with qe	|Time:Sat Nov 20 09:57:24 2021
+Debug: start turning -90 with qe	|Time:Sat Nov 20 09:57:40 2021
+Info: start to_qr	|Time:Sat Nov 20 09:57:45 2021
+Error: cannot find a QR code, exit	|Time:Sat Nov 20 09:57:48 2021
+Info: start go_mos distance:10 	|Time:Sat Nov 20 09:57:49 2021
+Info: start go_mos distance:300 	|Time:Sat Nov 20 09:57:53 2021

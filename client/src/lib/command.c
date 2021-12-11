@@ -20,12 +20,11 @@
 #include <cmath>
 #include <sys/socket.h>
 
-extern float parel[2];//pixel_angle_relation for mouse
-extern float pdrel[2];//pixel_distance_relation for mouse
+extern float ptoa[2][2];//pulse to angle
+extern float ptod[2][2];//pulse to distance
 
 extern volatile long pos[2];
 extern int qr_ipc;
-
 
 int timer_turn(int target_angle){
     
@@ -49,6 +48,8 @@ int timer_turn(int target_angle){
 }
 
 int qr_turn(int target_angle){
+
+    target_angle = ANGLE_MINUS(target_angle,2);
     
     char msg[50];
     #ifdef DEBUG
@@ -141,26 +142,26 @@ int qe_turn(int target_angle){
     motor_stop();
     pos_reset();
     
-    #ifdef DEBUG
+    //#ifdef DEBUG
         sprintf(msg,"Debug: start turning %d with qe",target_angle);
         write_log(msg);
-    #endif
-    
+    //#endif
+
+    float ptoa_local;
     if(target_angle<0){
         motor_ctrl(LEFT, BACKWARD, 100);
         motor_ctrl(RIGHT, FORWARD, 100);
+        ptoa_local = ptoa[0][RIGHT];
     }
     else{
         motor_ctrl(LEFT, FORWARD, 100);
         motor_ctrl(RIGHT, BACKWARD, 100);
+        ptoa_local = ptoa[1][RIGHT];
     }
     
-    
-    int tem;
-    while(abs(pos[0])<abs(target_angle)*parel[0]){
-        
+    while(abs(pos[RIGHT])<abs(target_angle*ptoa_local)){
         #ifdef DEBUG
-            sprintf(msg,"Debug: waiting qe, pos[0] = %d",pos[0]);
+            sprintf(msg,"Debug: waiting qe, pos[RIGHT] = %d",pos[RIGHT]);
             write_log(msg);
         #endif
     }
@@ -184,7 +185,7 @@ int qe_go(int distance){
     motor_ctrl(LEFT, distance>>(sizeof(int)*8-1), 100);
     motor_ctrl(RIGHT, distance>>(sizeof(int)*8-1), 100);
     
-    while(abs(pos[0])<abs(distance*pdrel[0])){
+    while(abs(pos[RIGHT])<abs(distance*ptod[0][RIGHT])){
         #ifdef DEBUG
             sprintf(msg,"Debug: waiting mouse, pos[0] = %d",pos[0]);
             write_log(msg);
@@ -297,11 +298,11 @@ void qe_cir(uint8_t side, int16_t angle, uint16_t r){
                 write_log(msg);
             #endif
             
-            if(abs(pos[1]) > abs(right_distance*pdrel[1])){
+            if(abs(pos[RIGHT]) > abs(right_distance*ptod[0][RIGHT])){
                 break;
             }
             
-            if(abs(pos[1])/right_distance < abs(pos[0])/left_distance){
+            if(abs(pos[RIGHT]) / right_distance < abs(pos[LEFT]) / left_distance){
                 motor_ctrl(LEFT, way, 0);
             }
             else{
@@ -330,11 +331,11 @@ void qe_cir(uint8_t side, int16_t angle, uint16_t r){
                 write_log(msg);
             #endif
             
-            if(abs(pos[0]) > abs(left_distance*pdrel[0])){
+            if(abs(pos[LEFT]) > abs(left_distance*ptod[0][LEFT])){
                 break;
             }
             
-            if(abs(pos[1])/right_distance > abs(pos[0])/left_distance){
+            if(abs(pos[RIGHT])/right_distance > abs(pos[LEFT])/left_distance){
                 motor_ctrl(RIGHT, way, 0);
             }
             else{

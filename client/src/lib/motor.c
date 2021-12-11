@@ -1,6 +1,7 @@
 #include <wiringPi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "motor.h"
 #include "log.h"
@@ -14,6 +15,8 @@
 #define LEFT_PWM 23
 
 void motor_ctrl(int side, int way, int speed){
+
+
     int gpio_hi, gpio_lo, pwm;
     switch(side){
         case LEFT:
@@ -54,9 +57,17 @@ void motor_ctrl(int side, int way, int speed){
             return;
     }
     
-    pwmWrite(pwm, 1024*speed*0.01);
-    digitalWrite(gpio_hi, HIGH);
-    digitalWrite(gpio_lo, LOW);
+
+    if(speed == 0){
+        digitalWrite(gpio_hi, LOW);
+        digitalWrite(gpio_lo, LOW);
+        return;
+    }
+    else{
+        digitalWrite(gpio_hi, HIGH);
+        digitalWrite(gpio_lo, LOW);
+        return;
+    }
     
     return;
 }
@@ -73,15 +84,11 @@ void motor_stop(){
     
     digitalWrite (LEFT_FORWARD, HIGH) ;
     digitalWrite (RIGHT_FORWARD, HIGH) ;
-    digitalWrite (LEFT_BACKWARD, LOW) ;
-    digitalWrite (RIGHT_BACKWARD, LOW) ;
-
-    digitalWrite (LEFT_FORWARD, LOW) ;
-    digitalWrite (RIGHT_FORWARD, LOW) ;
     digitalWrite (LEFT_BACKWARD, HIGH) ;
     digitalWrite (RIGHT_BACKWARD, HIGH) ;
 
-    motor_pwm(0,0);
+    usleep(500);
+
     digitalWrite (LEFT_BACKWARD, LOW) ;
     digitalWrite (RIGHT_BACKWARD, LOW) ;
     digitalWrite (LEFT_FORWARD, LOW) ;
@@ -99,8 +106,6 @@ void pin_init(){
     pinMode (RIGHT_PWM, PWM_OUTPUT) ; 
     pinMode (RIGHT_FORWARD, OUTPUT) ;
     pinMode (RIGHT_BACKWARD, OUTPUT);
-    
-    motor_pwm(0,0);
     
     motor_stop();
 }

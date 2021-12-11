@@ -47,8 +47,6 @@ bool qr_reader_mutex;
 static int8_t ordr = 0;//Output ReDiRect flag
 extern unsigned char CAMERA_PP;//ping pong flag
 extern cv::Mat IMAGE[2];
-extern int parel[365][2];
-extern int mos_sum[2];//pixel value sum
 
 
 uint16_t get_angle(qr_code *);

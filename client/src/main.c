@@ -71,9 +71,7 @@ int main (){
 	qe_corr();
 	sleep(1);
 	qr_turn(0);
-    to_qr(26, 0,500);
-	qr_turn(90);
-    qe_go(100);
+    qe_go(300);
 	sleep(1);
 
 	/*printf("qecir start\n");
